@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Polyclinic</title>
+</head>
+<body>
+<h1>Departments</h1>
+<div class="search-section">
+  <input type="text" id="searchInput" placeholder="Search patient...">
+  <button onclick="searchPatients()">Search</button>
+</div>
+
+<div id="loader" style="display: none;">Load...</div>
+<div id="error" style="color: red; display: none;"></div>
+
+<script>
+  let currentLoader = null;
+
+  async function fetchWithLoader(url, options) {
+      showLoader();
+      try {
+          const response = await fetch(url, options);
+          if (!response.ok) throw new Error(await response.text());
+          return await response.json();
+      } catch (error) {
+          showError(error.message);
+      } finally {
+          hideLoader();
+      }
+  }
+
+  function showLoader() {
+      document.getElementById('loader').style.display = 'block';
+  }
+
+  function hideLoader() {
+      document.getElementById('loader').style.display = 'none';
+  }
+
+  function showError(message) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.style.display = 'block';
+      errorDiv.textContent = message;
+      setTimeout(() => errorDiv.style.display = 'none', 5000);
+  }
+</script>
+</body>
+</html>
