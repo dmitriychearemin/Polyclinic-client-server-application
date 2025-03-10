@@ -1,25 +1,38 @@
-package Controllers;
+package com.example.demo.Controllers;
 
-import Entities.Department;
-import Services.DepartmentService;
+import com.example.demo.Entities.Department;
+import com.example.demo.Services.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/departments")
 @RequiredArgsConstructor
 public class DepartmentController {
+
     private final DepartmentService departmentService;
 
-    public DepartmentController(DepartmentService departmentService) {
-        this.departmentService = departmentService;
-    }
 
     @GetMapping
-    public List<Department> getAllDepartments() {
-        return departmentService.getDepartmentTree();
+    public List<DepartmentDTO> getAllDepartments() {
+        List<Department> departments = departmentService.getDepartmentTree();
+        return departments.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private DepartmentDTO convertToDTO(Department department) {
+        DepartmentDTO dto = new DepartmentDTO();
+        dto.setId(department.getId());
+        dto.setName(department.getName());
+        dto.setChildren(department.getChildren().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toSet()));
+        dto.setAvailable(department.isAvailable());
+        return dto;
     }
 
     @PostMapping

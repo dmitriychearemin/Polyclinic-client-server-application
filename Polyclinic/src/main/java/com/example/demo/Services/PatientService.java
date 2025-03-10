@@ -1,9 +1,9 @@
-package Services;
+package com.example.demo.Services;
 
-import Entities.Department;
-import Entities.Patient;
-import Interfaces.DepartmentRepository;
-import Interfaces.PatientRepository;
+import com.example.demo.Entities.Department;
+import com.example.demo.Entities.Patient;
+import com.example.demo.Interfaces.DepartmentRepository;
+import com.example.demo.Interfaces.PatientRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,10 +16,10 @@ public class PatientService {
     private final PatientRepository patientRepository;
     private final DepartmentRepository departmentRepository;
 
-    public PatientService(PatientRepository patientRepository, DepartmentRepository departmentRepository) {
+/*    public PatientService(PatientRepository patientRepository, DepartmentRepository departmentRepository) {
         this.patientRepository = patientRepository;
         this.departmentRepository = departmentRepository;
-    }
+    }*/
 
     public Patient createPatient(Patient patient, Long departmentId) {
         Department department = departmentRepository.findById(departmentId)

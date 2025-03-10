@@ -1,6 +1,6 @@
-package Controllers;
+package com.example.demo.Controllers;
 
-import Services.DepartmentService;
+import com.example.demo.Services.DepartmentService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
