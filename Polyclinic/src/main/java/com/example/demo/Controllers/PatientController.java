@@ -1,7 +1,7 @@
-package Controllers;
+package com.example.demo.Controllers;
 
-import Entities.Patient;
-import Services.PatientService;
+import com.example.demo.Entities.Patient;
+import com.example.demo.Services.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +13,9 @@ import java.util.List;
 public class PatientController {
     private final PatientService patientService;
 
-    public PatientController(PatientService patientService) {
+/*    public PatientController(PatientService patientService) {
         this.patientService = patientService;
-    }
+    }*/
 
     @PostMapping
     public Patient createPatient(@RequestBody Patient patient,

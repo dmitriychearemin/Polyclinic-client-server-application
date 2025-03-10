@@ -1,10 +1,11 @@
-package Entities;
+package com.example.demo.Entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 import java.time.LocalDate;
 
@@ -26,6 +27,7 @@ public class Patient {
 
     @ManyToOne
     @JoinColumn(name = "department_id")
+    @JsonBackReference
     private Department department;
 
     public Long getId() {

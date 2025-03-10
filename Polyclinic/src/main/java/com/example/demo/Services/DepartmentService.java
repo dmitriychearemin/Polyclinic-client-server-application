@@ -1,9 +1,11 @@
-package Services;
+package com.example.demo.Services;
 
-import Entities.Department;
-import Interfaces.DepartmentRepository;
+import com.example.demo.Entities.Department;
+import com.example.demo.Interfaces.DepartmentRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,11 +13,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class DepartmentService {
+    @Autowired
+    private EntityManager entityManager;
     private final DepartmentRepository departmentRepository;
-
-    public DepartmentService(DepartmentRepository departmentRepository) {
-        this.departmentRepository = departmentRepository;
-    }
 
     public Department updateDepartment(Long id, Department updatedDepartment) {
         Department department = departmentRepository.findById(id)
@@ -43,7 +43,16 @@ public class DepartmentService {
     }
 
     public List<Department> getDepartmentTree() {
-        return departmentRepository.findByParentIsNull();
+
+        List<Department> departments = departmentRepository.findByParentIsNull();
+
+        for (var d : departments) {
+            if (d.getCapacity()  <= d.getCurrentNumberOfPatients()) {
+                d.setAvailable(false);
+            }
+        }
+
+        return departments;
     }
 
     public DepartmentRepository getDepartmentRepository() {

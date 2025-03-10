@@ -1,6 +1,6 @@
-package Interfaces;
+package com.example.demo.Interfaces;
 
-import Entities.Patient;
+import com.example.demo.Entities.Patient;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
