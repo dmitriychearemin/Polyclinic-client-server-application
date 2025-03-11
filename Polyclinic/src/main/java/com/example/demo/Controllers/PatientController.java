@@ -42,6 +42,11 @@ public class PatientController {
         return patientService.updatePatient(id, patient);
     }
 
+    @GetMapping
+    public List<Patient> getAllPatients() {
+        return patientService.getPatientRepository().findAll();
+    }
+
     @DeleteMapping("/{id}")
     public void deletePatient(@PathVariable Long id) {
         patientService.deletePatient(id);

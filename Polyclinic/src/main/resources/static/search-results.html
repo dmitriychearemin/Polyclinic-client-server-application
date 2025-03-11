@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search Results</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .back-button {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+<button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
+<h1>Search Results</h1>
+<div id="patientsList"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('query');
+    if (query) {
+      searchPatients(query);
+    } else {
+      alert('Search query is missing.');
+    }
+  });
+
+  function searchPatients(query) {
+    fetch(`/api/patients/search?query=${query}`)
+      .then(response => response.json())
+      .then(patients => {
+        const patientsList = document.getElementById('patientsList');
+        patientsList.innerHTML = patients.map(patient => `
+          <div>${patient.firstName} ${patient.lastName}</div>
+        `).join('');
+      })
+      .catch(error => alert(error.message));
+  }
+</script>
+</body>
+</html>

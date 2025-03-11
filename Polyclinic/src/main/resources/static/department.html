@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Department Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .back-button {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+<button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
+<h1 id="departmentName"></h1>
+<p id="departmentDescription"></p>
+<button onclick="viewPatients()">View Patients in This Department</button>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const departmentId = urlParams.get('id');
+    if (departmentId) {
+      loadDepartmentDetails(departmentId);
+    } else {
+      alert('Department ID is missing.');
+    }
+  });
+
+  function loadDepartmentDetails(departmentId) {
+    fetch(`/api/departments/${departmentId}`)
+      .then(response => response.json())
+      .then(department => {
+        document.getElementById('departmentName').textContent = department.name;
+        document.getElementById('departmentDescription').textContent = department.description;
+      })
+      .catch(error => alert(error.message));
+  }
+
+  function viewPatients() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const departmentId = urlParams.get('id');
+    window.location.href = `patients.html?departmentId=${departmentId}`;
+  }
+</script>
+</body>
+</html>
