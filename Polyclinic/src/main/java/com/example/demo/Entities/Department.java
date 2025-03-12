@@ -4,12 +4,16 @@ package com.example.demo.Entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import jakarta.persistence.Id;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +27,19 @@ public class Department {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     private String name;
+
+    @NotBlank
+    private String description;
+
+    @NotNull
+    @Positive
+    private Integer capacity;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
     @Transient
     private boolean available = true;
@@ -37,11 +53,8 @@ public class Department {
     @JsonManagedReference
     private Set<Department> children = new HashSet<>();
 
-    @Column(name = "capacity")
-    private Integer capacity;
-
     @Column(name = "current_number_of_patients")
-    private Integer currentNumberOfPatients;
+    private Integer currentNumberOfPatients = 0;
 
     public void setParent(Department parent) {
         this.parent = parent;
@@ -100,5 +113,29 @@ public class Department {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setCurrentNumberOfPatients(Integer currentNumberOfPatients) {
+        this.currentNumberOfPatients = currentNumberOfPatients;
     }
 }

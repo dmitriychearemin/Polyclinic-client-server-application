@@ -29,16 +29,24 @@ public class DepartmentService {
     }
 
     public Department getDepartmentById(Long id) {
-        return departmentRepository.findById(id)
+        return departmentRepository.findByIdWithParent(id)
                 .orElseThrow(() -> new EntityNotFoundException("Department not found"));
     }
 
-    public Department createDepartment(Department department, Long parentId) {
-        if (parentId != null) {
-            Department parent = departmentRepository.findById(parentId)
+    public Department createDepartment(DepartmentRequest request) {
+        Department department = new Department();
+        department.setName(request.getName());
+        department.setDescription(request.getDescription());
+        department.setCapacity(request.getCapacity());
+
+        // Если parentId указан, находим родительский департамент
+        if (request.getParentId() != null) {
+            Department parent = departmentRepository.findById(request.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("Parent department not found"));
             department.setParent(parent);
         }
+
+        // Поле createdAt заполнится автоматически благодаря аннотации @CreationTimestamp
         return departmentRepository.save(department);
     }
 

@@ -10,20 +10,77 @@
     .back-button {
       margin-bottom: 20px;
     }
+    .details-section, .edit-section {
+      margin-bottom: 20px;
+    }
+    .edit-section {
+      display: none;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .form-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
-<button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
+<button class="back-button" onclick="window.history.back()">Back</button>
 <h1 id="departmentName"></h1>
-<p id="departmentDescription"></p>
-<button onclick="viewPatients()">View Patients in This Department</button>
+
+<div class="details-section">
+  <p><strong>Description:</strong> <span id="departmentDescription"></span></p>
+  <p><strong>Capacity:</strong> <span id="departmentCapacity"></span></p>
+  <p><strong>Current Patients:</strong> <span id="departmentCurrentPatients"></span></p>
+  <p><strong>Parent Department:</strong> <span id="departmentParent"></span></p>
+  <button onclick="window.location.href = `edit-department.html?id=${currentDepartmentId}`">Edit Department</button>  <button onclick="viewPatients()">View Patients in This Department</button>
+</div>
+
+<div class="edit-section">
+  <h2>Edit Department</h2>
+  <form id="editDepartmentForm">
+    <div class="form-group">
+      <label for="editName">Name *</label>
+      <input type="text" id="editName" required>
+    </div>
+    <div class="form-group">
+      <label for="editDescription">Description *</label>
+      <input type="text" id="editDescription" required>
+    </div>
+    <div class="form-group">
+      <label for="editCapacity">Capacity *</label>
+      <input type="number" id="editCapacity" required>
+    </div>
+    <div class="form-group">
+      <label for="editParentId">Parent ID (optional)</label>
+      <input type="number" id="editParentId">
+    </div>
+    <div class="form-buttons">
+      <button type="button" onclick="toggleEditForm()">Cancel</button>
+      <button type="button" onclick="updateDepartment()">Save Changes</button>
+    </div>
+  </form>
+</div>
 
 <script>
+  let currentDepartmentId;
+
   document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const departmentId = urlParams.get('id');
-    if (departmentId) {
-      loadDepartmentDetails(departmentId);
+    currentDepartmentId = urlParams.get('id');
+    if (currentDepartmentId) {
+      loadDepartmentDetails(currentDepartmentId);
     } else {
       alert('Department ID is missing.');
     }
@@ -35,14 +92,63 @@
       .then(department => {
         document.getElementById('departmentName').textContent = department.name;
         document.getElementById('departmentDescription').textContent = department.description;
+        document.getElementById('departmentCapacity').textContent = department.capacity;
+        document.getElementById('departmentCurrentPatients').textContent = department.currentNumberOfPatients;
+        document.getElementById('departmentParent').textContent = department.parent ? department.parent.name : 'None';
+
+        document.getElementById('editName').value = department.name;
+        document.getElementById('editDescription').value = department.description;
+        document.getElementById('editCapacity').value = department.capacity;
+        document.getElementById('editParentId').value = department.parent ? department.parent.id : '';
       })
       .catch(error => alert(error.message));
   }
 
+  function toggleEditForm() {
+    const detailsSection = document.querySelector('.details-section');
+    const editSection = document.querySelector('.edit-section');
+    detailsSection.style.display = detailsSection.style.display === 'none' ? 'block' : 'none';
+    editSection.style.display = editSection.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function updateDepartment() {
+    const name = document.getElementById('editName').value.trim();
+    const description = document.getElementById('editDescription').value.trim();
+    const capacity = document.getElementById('editCapacity').value;
+    const parentId = document.getElementById('editParentId').value;
+
+    if (!name || !description || !capacity) {
+      alert('Please fill all required fields (*)');
+      return;
+    }
+
+    const updatedData = {
+      name: name,
+      description: description,
+      capacity: parseInt(capacity),
+      parentId: parentId ? parseInt(parentId) : null
+    };
+
+    fetch(`/api/departments/${currentDepartmentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedData),
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Error updating department');
+      alert('Department updated successfully!');
+      loadDepartmentDetails(currentDepartmentId);
+      toggleEditForm();
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+
   function viewPatients() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const departmentId = urlParams.get('id');
-    window.location.href = `patients.html?departmentId=${departmentId}`;
+    window.location.href = `patients.html?departmentId=${currentDepartmentId}`;
   }
 </script>
 </body>
