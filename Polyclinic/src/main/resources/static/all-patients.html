@@ -28,7 +28,9 @@
       .then(patients => {
         const patientsList = document.getElementById('patientsList');
         patientsList.innerHTML = patients.map(patient => `
-          <div>${patient.firstName} ${patient.lastName}</div>
+          <div>
+            <a href="patients.html?id=${patient.id}">${patient.firstName} ${patient.lastName}</a>
+          </div>
         `).join('');
       })
       .catch(error => alert(error.message));

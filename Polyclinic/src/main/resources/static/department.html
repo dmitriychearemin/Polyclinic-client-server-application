@@ -3,7 +3,6 @@
 <head>
   <title>Department Details</title>
   <style>
-    /* Основные стили */
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
@@ -34,8 +33,6 @@
       display: flex;
       gap: 10px;
     }
-
-    /* Стили для модального окна */
     .modal {
       display: none;
       position: fixed;
@@ -117,7 +114,6 @@
   </form>
 </div>
 
-<!-- Модальное окно для отображения информации о враче -->
 <div id="doctorModal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
@@ -126,6 +122,14 @@
     <p><strong>Email:</strong> <span id="modalEmail"></span></p>
     <p><strong>Phone:</strong> <span id="modalPhone"></span></p>
     <p><strong>Department:</strong> <span id="modalDepartment"></span></p>
+  </div>
+</div>
+
+<div id="patientsModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Patients in This Department</h2>
+    <ul id="patientsList"></ul>
   </div>
 </div>
 
@@ -141,15 +145,19 @@
       alert('Department ID is missing.');
     }
 
-    // Инициализация модального окна
-    const modal = document.getElementById('doctorModal');
-    const span = document.getElementsByClassName('close')[0];
+    // Инициализация модальных окон
+    const initModal = (modalId) => {
+      const modal = document.getElementById(modalId);
+      const span = modal.getElementsByClassName('close')[0];
 
-    // Закрытие модального окна
-    span.onclick = () => modal.style.display = 'none';
-    window.onclick = (event) => {
-      if (event.target === modal) modal.style.display = 'none';
-    }
+      span.onclick = () => modal.style.display = "none";
+      window.onclick = (event) => {
+        if (event.target === modal) modal.style.display = "none";
+      }
+    };
+
+    initModal('doctorModal');
+    initModal('patientsModal');
 
     // Обработчик клика на врача
     document.getElementById('doctorsList').addEventListener('click', async (event) => {
@@ -162,7 +170,6 @@
         if (!response.ok) throw new Error('Doctor not found');
         const doctor = await response.json();
 
-        // Заполнение модального окна данными
         document.getElementById('modalDoctorName').textContent =
           `${doctor.firstName} ${doctor.lastName}`;
         document.getElementById('modalSpecialization').textContent = doctor.specialization;
@@ -171,7 +178,7 @@
         document.getElementById('modalDepartment').textContent =
           doctor.department?.name || 'No department';
 
-        modal.style.display = 'block';
+        document.getElementById('doctorModal').style.display = 'block';
       } catch (error) {
         alert('Error loading doctor details: ' + error.message);
       }
@@ -180,7 +187,10 @@
 
   function loadDepartmentDetails(departmentId) {
     fetch(`/api/departments/${departmentId}`)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
       .then(department => {
         document.getElementById('departmentName').textContent = department.name;
         document.getElementById('departmentDescription').textContent = department.description;
@@ -248,7 +258,32 @@
   }
 
   function viewPatients() {
-    window.location.href = `patients.html?departmentId=${currentDepartmentId}`;
+    const modal = document.getElementById('patientsModal');
+    const patientsList = document.getElementById('patientsList');
+    patientsList.innerHTML = 'Loading...';
+    modal.style.display = "block";
+
+    fetch(`/api/patients/by-department/${currentDepartmentId}`)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(patients => {
+        patientsList.innerHTML = patients.length === 0
+          ? '<li>No patients found</li>'
+          : patients.map(patient => `
+              <li style="cursor: pointer; margin-bottom: 5px;"
+                  onclick="window.location.href='patients.html?id=${patient.id}'">
+                ${patient.firstName} ${patient.lastName}
+                (${patient.birthDate ? new Date(patient.birthDate).toLocaleDateString() : 'N/A'})
+              </li>
+            `).join('');
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error loading patients: ' + error.message);
+        modal.style.display = "none";
+      });
   }
 </script>
 </body>

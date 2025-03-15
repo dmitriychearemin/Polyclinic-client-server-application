@@ -2,6 +2,7 @@ package com.example.demo.Controllers;
 
 import com.example.demo.Entities.Patient;
 import com.example.demo.Services.PatientService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,12 @@ public class PatientController {
     public Patient createPatient(@RequestBody Patient patient,
                                  @RequestParam Long departmentId) {
         return patientService.createPatient(patient, departmentId);
+    }
+
+    @GetMapping("/{id}")
+    public Patient getPatientById(@PathVariable Long id) {
+        return patientService.getPatientRepository().findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
     }
 
     @GetMapping("/by-department/{departmentId}")

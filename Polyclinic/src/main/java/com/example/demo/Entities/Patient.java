@@ -19,9 +19,15 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
+
+    @Column(name = "birth_date")
     private LocalDate birthDate;
+
     private String phone;
     private String email;
 
@@ -29,5 +35,4 @@ public class Patient {
     @JoinColumn(name = "department_id")
     @JsonBackReference
     private Department department;
-
 }

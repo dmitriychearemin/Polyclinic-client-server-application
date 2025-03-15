@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Patients</title>
+  <title>Patient Details</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,29 +13,35 @@
   </style>
 </head>
 <body>
-<button class="back-button" onclick="history.back()">Back</button>
-<h1>Patients</h1>
-<div id="patientsList"></div>
+<button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
+<h1>Patient Details</h1>
+<div id="patientDetails"></div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const departmentId = urlParams.get('departmentId');
-    if (departmentId) {
-      loadPatients(departmentId);
+    const patientId = urlParams.get('id');
+    if (patientId) {
+      loadPatientDetails(patientId);
     } else {
-      alert('Department ID is missing.');
+      alert('Patient ID not found in URL.');
     }
   });
 
-  function loadPatients(departmentId) {
-    fetch(`/api/patients/by-department/${departmentId}`)
+  function loadPatientDetails(patientId) {
+    fetch(`/api/patients/${patientId}`)
       .then(response => response.json())
-      .then(patients => {
-        const patientsList = document.getElementById('patientsList');
-        patientsList.innerHTML = patients.map(patient => `
-          <div>${patient.firstName} ${patient.lastName}</div>
-        `).join('');
+      .then(patient => {
+        const patientDetails = document.getElementById('patientDetails');
+        patientDetails.innerHTML = `
+          <p><strong>ID:</strong> ${patient.id}</p>
+          <p><strong>First Name:</strong> ${patient.firstName}</p>
+          <p><strong>Last Name:</strong> ${patient.lastName}</p>
+          <p><strong>Birth Date:</strong> ${patient.birthDate}</p>
+          <p><strong>Phone:</strong> ${patient.phone}</p>
+          <p><strong>Email:</strong> ${patient.email}</p>
+          <p><strong>Department:</strong> ${patient.department ? patient.department.name : 'N/A'}</p>
+        `;
       })
       .catch(error => alert(error.message));
   }
