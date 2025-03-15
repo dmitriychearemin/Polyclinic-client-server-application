@@ -32,51 +32,5 @@ public class AnalysisResult {
 
     private String result;
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Patient getPatient() {
-        return patient;
-    }
-
-    public void setPatient(Patient patient) {
-        this.patient = patient;
-    }
-
-    public Doctor getDoctor() {
-        return doctor;
-    }
-
-    public void setDoctor(Doctor doctor) {
-        this.doctor = doctor;
-    }
-
-    public String getTestType() {
-        return testType;
-    }
-
-    public void setTestType(String testType) {
-        this.testType = testType;
-    }
-
-    public LocalDate getTestDate() {
-        return testDate;
-    }
-
-    public void setTestDate(LocalDate testDate) {
-        this.testDate = testDate;
-    }
-
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }
 }

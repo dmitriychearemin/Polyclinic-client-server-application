@@ -4,6 +4,7 @@ import com.example.demo.Entities.Department;
 import com.example.demo.Interfaces.DepartmentRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.List;
 public class DepartmentService {
     @Autowired
     private EntityManager entityManager;
+    @Getter
     private final DepartmentRepository departmentRepository;
 
     public Department updateDepartment(Long id, Department updatedDepartment) {
@@ -29,16 +31,23 @@ public class DepartmentService {
     }
 
     public Department getDepartmentById(Long id) {
-        return departmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Department not found"));
-    }
+        return departmentRepository.findByIdWithParent(id)
+                .orElseThrow(() -> new EntityNotFoundException("Department not found"));    }
 
-    public Department createDepartment(Department department, Long parentId) {
-        if (parentId != null) {
-            Department parent = departmentRepository.findById(parentId)
+    public Department createDepartment(DepartmentRequest request) {
+        Department department = new Department();
+        department.setName(request.getName());
+        department.setDescription(request.getDescription());
+        department.setCapacity(request.getCapacity());
+
+        // Если parentId указан, находим родительский департамент
+        if (request.getParentId() != null) {
+            Department parent = departmentRepository.findById(request.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("Parent department not found"));
             department.setParent(parent);
         }
+
+        // Поле createdAt заполнится автоматически благодаря аннотации @CreationTimestamp
         return departmentRepository.save(department);
     }
 
@@ -53,10 +62,6 @@ public class DepartmentService {
         }
 
         return departments;
-    }
-
-    public DepartmentRepository getDepartmentRepository() {
-        return departmentRepository;
     }
 
     @Override

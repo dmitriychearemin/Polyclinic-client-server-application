@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Polyclinic</title>
+  <style>
+    .department-list {
+      margin-bottom: 20px;
+    }
+    .department {
+      cursor: pointer;
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    .department.available {
+      color: blue;
+      text-decoration: underline;
+      background-color: #e6f3ff;
+    }
+    .department.unavailable {
+      color: gray;
+      background-color: #f0f0f0;
+    }
+    .search-section {
+      margin-top: 20px;
+    }
+    .children {
+      margin-left: 20px; /* Отступ для вложенных департаментов */
+      border-left: 2px solid #ccc; /* Линия для визуального представления дерева */
+      padding-left: 10px; /* Отступ от линии */
+    }
+  </style>
+</head>
+<body>
+<h1>Polyclinic Number ONE</h1>
+
+<div class="department-list">
+  <h2>Departments
+    <button onclick="window.location.href='create-department.html'" style="margin-left: 10px; padding: 5px 10px;">+ Add</button>
+  </h2>
+  <div id="departments">
+
+  </div>
+</div>
+
+<div class="view-all-patients">
+  <button onclick="window.location.href='all-patients.html'">View All Patients</button>
+</div>
+
+<div class="search-section">
+  <h2>Search Patients</h2>
+  <input type="text" id="searchInput" placeholder="Full or part name">
+  <button onclick="searchPatients()">Search</button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    loadDepartments();
+  });
+
+  function loadDepartments() {
+    fetch('/api/departments')
+      .then(response => response.json())
+      .then(departments => {
+        const departmentsContainer = document.getElementById('departments');
+        departmentsContainer.innerHTML = renderDepartments(departments);
+      })
+      .catch(error => showError(error.message));
+  }
+
+  function renderDepartments(departments) {
+    return departments.map(department => `
+      <div>
+        <div class="department ${department.available ? 'available' : 'unavailable'}"
+             onclick="window.location.href='department.html?id=${department.id}'">
+          ${department.name}
+        </div>
+        ${department.children && department.children.length > 0 ? `
+          <div class="children">
+            ${renderDepartments(department.children)}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+  }
+
+  function searchPatients() {
+    const query = document.getElementById('searchInput').value;
+    window.location.href = `search-results.html?query=${query}`;
+  }
+
+  function showError(message) {
+    alert(message);
+  }
+</script>
+</body>
+</html>

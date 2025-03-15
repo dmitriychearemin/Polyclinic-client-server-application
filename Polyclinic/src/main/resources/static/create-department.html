@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Department</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .form-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .form-buttons button {
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<h1>Create Department</h1>
+<form id="createDepartmentForm">
+  <div class="form-group">
+    <label for="name">Name *</label>
+    <input type="text" id="name" required>
+  </div>
+  <div class="form-group">
+    <label for="description">Description *</label>
+    <input type="text" id="description" required>
+  </div>
+  <div class="form-group">
+    <label for="capacity">Capacity *</label>
+    <input type="number" id="capacity" required>
+  </div>
+  <div class="form-group">
+    <label for="parentId">Parent ID (optional)</label>
+    <input type="number" id="parentId">
+  </div>
+  <div class="form-buttons">
+    <button type="button" onclick="window.history.back()">Back</button> <!-- Изменено здесь -->
+    <button type="button" onclick="createDepartment()">Save</button>
+  </div>
+</form>
+
+<script>
+  function createDepartment() {
+    const name = document.getElementById('name').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const capacity = document.getElementById('capacity').value;
+    const parentId = document.getElementById('parentId').value;
+
+    // Проверка обязательных полей
+    if (!name || !description || !capacity) {
+      alert('Please fill all required fields (*)');
+      return;
+    }
+
+    const departmentData = {
+      name: name,
+      description: description,
+      capacity: parseInt(capacity),
+      parentId: parentId ? parseInt(parentId) : null
+    };
+
+    // Отправка данных на сервер
+    fetch('/api/departments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(departmentData),
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Error creating department');
+      alert('Department created successfully!');
+      window.location.href = 'index.html'; // Возврат на главную страницу
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+</script>
+</body>
+</html>

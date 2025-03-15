@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>All Patients</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .back-button {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+<button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
+<h1>All Patients</h1>
+<div id="patientsList"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAllPatients();
+  });
+
+  function loadAllPatients() {
+    fetch('/api/patients')
+      .then(response => response.json())
+      .then(patients => {
+        const patientsList = document.getElementById('patientsList');
+        patientsList.innerHTML = patients.map(patient => `
+          <div>
+            <a href="patients.html?id=${patient.id}">${patient.firstName} ${patient.lastName}</a>
+          </div>
+        `).join('');
+      })
+      .catch(error => alert(error.message));
+  }
+</script>
+</body>
+</html>
