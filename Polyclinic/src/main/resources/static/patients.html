@@ -40,7 +40,7 @@
           <p><strong>Birth Date:</strong> ${patient.birthDate}</p>
           <p><strong>Phone:</strong> ${patient.phone}</p>
           <p><strong>Email:</strong> ${patient.email}</p>
-          <p><strong>Department:</strong> ${patient.department ? patient.department.name : 'N/A'}</p>
+          <p><strong>Department:</strong> ${patient.departmentName}</p>
         `;
       })
       .catch(error => alert(error.message));

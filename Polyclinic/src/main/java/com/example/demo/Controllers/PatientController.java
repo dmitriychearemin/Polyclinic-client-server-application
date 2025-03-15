@@ -1,9 +1,11 @@
 package com.example.demo.Controllers;
 
 import com.example.demo.Entities.Patient;
+import com.example.demo.Interfaces.PatientRepository;
 import com.example.demo.Services.PatientService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PatientController {
     private final PatientService patientService;
+    private final PatientRepository patientRepository;
 
 
     @PostMapping
@@ -22,9 +25,10 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    public Patient getPatientById(@PathVariable Long id) {
-        return patientService.getPatientRepository().findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
+    public ResponseEntity<PatientDTO> getPatientById(@PathVariable Long id) {
+        return patientRepository.findById(id)
+                .map(patient -> ResponseEntity.ok(new PatientDTO(patient)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/by-department/{departmentId}")
