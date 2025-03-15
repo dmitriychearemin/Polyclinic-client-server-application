@@ -5,21 +5,19 @@ import com.example.demo.Entities.Patient;
 import com.example.demo.Interfaces.DepartmentRepository;
 import com.example.demo.Interfaces.PatientRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Getter
 @Service
 @RequiredArgsConstructor
 public class PatientService {
     private final PatientRepository patientRepository;
     private final DepartmentRepository departmentRepository;
 
-/*    public PatientService(PatientRepository patientRepository, DepartmentRepository departmentRepository) {
-        this.patientRepository = patientRepository;
-        this.departmentRepository = departmentRepository;
-    }*/
 
     public Patient createPatient(Patient patient, Long departmentId) {
         Department department = departmentRepository.findById(departmentId)
@@ -45,14 +43,6 @@ public class PatientService {
 
     public List<Patient> searchPatients(String query) {
         return patientRepository.findByFirstNameContainingOrLastNameContaining(query, query);
-    }
-
-    public PatientRepository getPatientRepository() {
-        return patientRepository;
-    }
-
-    public DepartmentRepository getDepartmentRepository() {
-        return departmentRepository;
     }
 
     @Override

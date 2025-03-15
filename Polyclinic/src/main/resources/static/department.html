@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Department Details</title>
   <style>
+    /* Основные стили */
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
@@ -33,6 +34,44 @@
       display: flex;
       gap: 10px;
     }
+
+    /* Стили для модального окна */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 60%;
+      max-width: 500px;
+      border-radius: 5px;
+      position: relative;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      position: absolute;
+      right: 15px;
+      top: 5px;
+    }
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -44,7 +83,12 @@
   <p><strong>Capacity:</strong> <span id="departmentCapacity"></span></p>
   <p><strong>Current Patients:</strong> <span id="departmentCurrentPatients"></span></p>
   <p><strong>Parent Department:</strong> <span id="departmentParent"></span></p>
-  <button onclick="window.location.href = `edit-department.html?id=${currentDepartmentId}`">Edit Department</button>  <button onclick="viewPatients()">View Patients in This Department</button>
+
+  <p><strong>Doctors in This Department:</strong></p>
+  <ul id="doctorsList"></ul>
+
+  <button onclick="window.location.href = `edit-department.html?id=${currentDepartmentId}`">Edit Department</button>
+  <button onclick="viewPatients()">View Patients in This Department</button>
 </div>
 
 <div class="edit-section">
@@ -73,6 +117,18 @@
   </form>
 </div>
 
+<!-- Модальное окно для отображения информации о враче -->
+<div id="doctorModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2 id="modalDoctorName"></h2>
+    <p><strong>Specialization:</strong> <span id="modalSpecialization"></span></p>
+    <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+    <p><strong>Phone:</strong> <span id="modalPhone"></span></p>
+    <p><strong>Department:</strong> <span id="modalDepartment"></span></p>
+  </div>
+</div>
+
 <script>
   let currentDepartmentId;
 
@@ -84,6 +140,42 @@
     } else {
       alert('Department ID is missing.');
     }
+
+    // Инициализация модального окна
+    const modal = document.getElementById('doctorModal');
+    const span = document.getElementsByClassName('close')[0];
+
+    // Закрытие модального окна
+    span.onclick = () => modal.style.display = 'none';
+    window.onclick = (event) => {
+      if (event.target === modal) modal.style.display = 'none';
+    }
+
+    // Обработчик клика на врача
+    document.getElementById('doctorsList').addEventListener('click', async (event) => {
+      const doctorItem = event.target.closest('.doctor-item');
+      if (!doctorItem) return;
+
+      const doctorId = doctorItem.dataset.id;
+      try {
+        const response = await fetch(`/api/doctors/${doctorId}`);
+        if (!response.ok) throw new Error('Doctor not found');
+        const doctor = await response.json();
+
+        // Заполнение модального окна данными
+        document.getElementById('modalDoctorName').textContent =
+          `${doctor.firstName} ${doctor.lastName}`;
+        document.getElementById('modalSpecialization').textContent = doctor.specialization;
+        document.getElementById('modalEmail').textContent = doctor.email;
+        document.getElementById('modalPhone').textContent = doctor.phone;
+        document.getElementById('modalDepartment').textContent =
+          doctor.department?.name || 'No department';
+
+        modal.style.display = 'block';
+      } catch (error) {
+        alert('Error loading doctor details: ' + error.message);
+      }
+    });
   });
 
   function loadDepartmentDetails(departmentId) {
@@ -100,6 +192,14 @@
         document.getElementById('editDescription').value = department.description;
         document.getElementById('editCapacity').value = department.capacity;
         document.getElementById('editParentId').value = department.parent ? department.parent.id : '';
+
+        const doctorsList = document.getElementById('doctorsList');
+        const doctors = department.doctors || [];
+        doctorsList.innerHTML = doctors.map(doctor => `
+          <li class="doctor-item" data-id="${doctor.id}" style="cursor: pointer; margin-bottom: 5px;">
+            ${doctor.firstName} ${doctor.lastName} - ${doctor.specialization}
+          </li>
+        `).join('');
       })
       .catch(error => alert(error.message));
   }

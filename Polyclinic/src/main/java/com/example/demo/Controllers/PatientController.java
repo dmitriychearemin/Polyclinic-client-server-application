@@ -13,9 +13,6 @@ import java.util.List;
 public class PatientController {
     private final PatientService patientService;
 
-/*    public PatientController(PatientService patientService) {
-        this.patientService = patientService;
-    }*/
 
     @PostMapping
     public Patient createPatient(@RequestBody Patient patient,

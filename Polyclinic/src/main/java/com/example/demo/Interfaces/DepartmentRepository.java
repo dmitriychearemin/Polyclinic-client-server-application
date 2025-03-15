@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
-    @Query("SELECT d FROM Department d LEFT JOIN FETCH d.parent WHERE d.id = :id")
-    Optional<Department> findByIdWithParent(@Param("id") Long id);
+        @Query("SELECT d FROM Department d " +
+                "LEFT JOIN FETCH d.parent " +
+                "WHERE d.id = :id")
+        Optional<Department> findByIdWithParent(@Param("id") Long id);
 
     List<Department> findByParentIsNull();
 }

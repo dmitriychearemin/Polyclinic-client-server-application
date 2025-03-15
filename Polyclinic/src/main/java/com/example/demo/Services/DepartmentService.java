@@ -4,6 +4,7 @@ import com.example.demo.Entities.Department;
 import com.example.demo.Interfaces.DepartmentRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.List;
 public class DepartmentService {
     @Autowired
     private EntityManager entityManager;
+    @Getter
     private final DepartmentRepository departmentRepository;
 
     public Department updateDepartment(Long id, Department updatedDepartment) {
@@ -30,8 +32,7 @@ public class DepartmentService {
 
     public Department getDepartmentById(Long id) {
         return departmentRepository.findByIdWithParent(id)
-                .orElseThrow(() -> new EntityNotFoundException("Department not found"));
-    }
+                .orElseThrow(() -> new EntityNotFoundException("Department not found"));    }
 
     public Department createDepartment(DepartmentRequest request) {
         Department department = new Department();
@@ -61,10 +62,6 @@ public class DepartmentService {
         }
 
         return departments;
-    }
-
-    public DepartmentRepository getDepartmentRepository() {
-        return departmentRepository;
     }
 
     @Override
