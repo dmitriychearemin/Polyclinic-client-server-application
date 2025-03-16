@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Patient</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .back-button {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .form-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+<button class="back-button" onclick="window.history.back()">Back</button>
+<h1>Edit Patient</h1>
+
+<form id="editPatientForm">
+  <div class="form-group">
+    <label for="firstName">First Name *</label>
+    <input type="text" id="firstName" required>
+  </div>
+  <div class="form-group">
+    <label for="lastName">Last Name *</label>
+    <input type="text" id="lastName" required>
+  </div>
+  <div class="form-group">
+    <label for="birthDate">Birth Date *</label>
+    <input type="date" id="birthDate" required>
+  </div>
+  <div class="form-group">
+    <label for="phone">Phone *</label>
+    <input type="tel" id="phone" required>
+  </div>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email">
+  </div>
+  <div class="form-buttons">
+    <button type="button" onclick="window.history.back()">Cancel</button>
+    <button type="button" onclick="updatePatient()">Save Changes</button>
+  </div>
+</form>
+
+<script>
+  let currentPatientId;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    currentPatientId = urlParams.get('id');
+
+    if (currentPatientId) {
+      fetch(`/api/patients/${currentPatientId}`)
+        .then(response => response.json())
+        .then(patient => {
+          document.getElementById('firstName').value = patient.firstName;
+          document.getElementById('lastName').value = patient.lastName;
+          document.getElementById('birthDate').value = patient.birthDate;
+          document.getElementById('phone').value = patient.phone;
+          document.getElementById('email').value = patient.email || '';
+        })
+        .catch(error => alert(error.message));
+    } else {
+      alert('Patient ID not found in URL.');
+    }
+  });
+
+  function updatePatient() {
+    const updatedPatient = {
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName: document.getElementById('lastName').value.trim(),
+      birthDate: document.getElementById('birthDate').value,
+      phone: document.getElementById('phone').value.trim(),
+      email: document.getElementById('email').value.trim()
+    };
+
+    if (!updatedPatient.firstName || !updatedPatient.lastName ||
+        !updatedPatient.birthDate || !updatedPatient.phone) {
+      alert('Please fill all required fields (*)');
+      return;
+    }
+
+    fetch(`/api/patients/${currentPatientId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedPatient)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Update failed');
+      alert('Patient updated successfully!');
+      window.location.href = `patients.html?id=${currentPatientId}`;
+    })
+    .catch(error => alert('Error: ' + error.message));
+  }
+</script>
+</body>
+</html>

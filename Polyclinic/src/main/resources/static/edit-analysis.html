@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Analysis</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .back-button {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .form-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+<button class="back-button" onclick="window.history.back()">Back</button>
+<h1>Edit Analysis</h1>
+
+<form id="editAnalysisForm">
+  <div class="form-group">
+    <label for="testType">Test Type *</label>
+    <input type="text" id="testType" required>
+  </div>
+  <div class="form-group">
+    <label for="testDate">Test Date *</label>
+    <input type="date" id="testDate" required>
+  </div>
+  <div class="form-group">
+    <label for="result">Result *</label>
+    <textarea id="result" rows="4" required></textarea>
+  </div>
+  <div class="form-group">
+    <label for="doctorId">Doctor ID *</label>
+    <input type="number" id="doctorId" required>
+  </div>
+  <div class="form-buttons">
+    <button type="button" onclick="window.history.back()">Cancel</button>
+    <button type="button" onclick="updateAnalysis()">Save Changes</button>
+  </div>
+</form>
+
+<script>
+  let currentAnalysisId;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    currentAnalysisId = urlParams.get('id');
+
+    if (currentAnalysisId) {
+      fetch(`/api/analyses/${currentAnalysisId}`)
+        .then(response => response.json())
+        .then(analysis => {
+          document.getElementById('testType').value = analysis.testType;
+          document.getElementById('testDate').value = analysis.testDate;
+          document.getElementById('result').value = analysis.result;
+          document.getElementById('doctorId').value = analysis.doctorId || '';
+        })
+        .catch(error => alert(error.message));
+    } else {
+      alert('Analysis ID not found in URL.');
+    }
+  });
+
+  function updateAnalysis() {
+  const updatedAnalysis = {
+    testType: document.getElementById('testType').value.trim(),
+    testDate: document.getElementById('testDate').value,
+    result: document.getElementById('result').value.trim(),
+    doctor: {
+      id: parseInt(document.getElementById('doctorId').value)
+    }
+  };
+
+  if (!updatedAnalysis.testType || !updatedAnalysis.testDate ||
+      !updatedAnalysis.result || !updatedAnalysis.doctor.id) {
+    alert('Please fill all required fields (*)');
+    return;
+  }
+
+  fetch(`/api/analyses/${currentAnalysisId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updatedAnalysis)
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Update failed');
+    alert('Analysis updated successfully!');
+    window.location.href = `analysis_result.html?id=${currentAnalysisId}`;
+  })
+  .catch(error => alert('Error: ' + error.message));
+}
+</script>
+</body>
+</html>
