@@ -32,5 +32,8 @@ public class AnalysisResult {
 
     private String result;
 
+    public Long getDoctorId() {
+        return doctor != null ? doctor.getId() : null;
+    }
 
 }
