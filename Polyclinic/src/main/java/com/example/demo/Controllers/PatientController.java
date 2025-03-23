@@ -1,14 +1,23 @@
 package com.example.demo.Controllers;
 
+import com.example.demo.DTO.AnalysisResultDTO;
+import com.example.demo.DTO.PatientDTO;
 import com.example.demo.Entities.Patient;
 import com.example.demo.Interfaces.PatientRepository;
 import com.example.demo.Services.PatientService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,13 +30,20 @@ public class PatientController {
     private final PatientRepository patientRepository;
 
 
+
+
     @PostMapping
-    public ResponseEntity<PatientDTO> createPatient(
-            @RequestBody Patient patient,
-            @RequestParam Long departmentId
-    ) {
-        Patient createdPatient = patientService.createPatient(patient, departmentId);
-        return ResponseEntity.ok(new PatientDTO(createdPatient));
+    public ResponseEntity<?> createPatient(@Valid @RequestBody PatientDTO patientDTO) {
+        try {
+            Patient createdPatient = patientService.createPatient(patientDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new PatientDTO(createdPatient));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error creating patient: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
@@ -54,9 +70,21 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PatientDTO> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
-        Patient updatedPatient = patientService.updatePatient(id, patient);
-        return ResponseEntity.ok(new PatientDTO(updatedPatient));
+    public ResponseEntity<?> updatePatient(
+            @PathVariable Long id,
+            @Valid @RequestBody PatientDTO patientDTO
+    ) {
+        try {
+            patientDTO.setId(id);
+            Patient updatedPatient = patientService.updatePatient(id, patientDTO);
+            return ResponseEntity.ok(new PatientDTO(updatedPatient));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", e.getMessage())); // Возвращаем JSON
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Collections.singletonMap("error", "Error updating patient: " + e.getMessage()));
+        }
     }
 
     @GetMapping

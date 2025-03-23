@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Analysis Result</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .back-button {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .form-buttons {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<button class="back-button" onclick="window.history.back()">Back</button>
+<h1>Create New Analysis Result</h1>
+
+<form id="createAnalysisResultForm">
+  <div class="form-group">
+    <label for="patientId">Patient ID *</label>
+    <input type="number" id="patientId" required min="1">
+  </div>
+  <div class="form-group">
+    <label for="doctorId">Doctor ID *</label>
+    <input type="number" id="doctorId" required min="1">
+  </div>
+  <div class="form-group">
+    <label for="testType">Test Type *</label>
+    <input type="text" id="testType" required>
+  </div>
+  <div class="form-group">
+    <label for="testDate">Test Date *</label>
+    <input type="date" id="testDate" required>
+  </div>
+  <div class="form-group">
+    <label for="result">Result *</label>
+    <input type="text" id="result" required>
+  </div>
+  <div class="form-buttons">
+    <button type="button" onclick="createAnalysisResult()">Create Analysis Result</button>
+  </div>
+</form>
+
+<script>
+  function createAnalysisResult() {
+ const analysisResultDTO = {
+        patientId: parseInt(document.getElementById('patientId').value),
+        doctorId: parseInt(document.getElementById('doctorId').value),
+        testType: document.getElementById('testType').value.trim(),
+        testDate: document.getElementById('testDate').value,
+        result: document.getElementById('result').value.trim()
+    };
+
+    if (!analysisResultDTO.patientId || !analysisResultDTO.doctorId ||
+        !analysisResultDTO.testType || !analysisResultDTO.testDate || !analysisResultDTO.result) {
+      alert('Please fill all required fields (*)');
+      return;
+    }
+
+    const button = document.querySelector('#createAnalysisResultForm button');
+    button.disabled = true;
+    button.innerHTML = 'Creating...';
+
+    fetch('/api/analyses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(analysisResultDTO),
+    })
+    .then(async response => {
+      const data = await response.json();
+      if (!response.ok) {
+        const errors = data.errors ? data.errors.join('\n') : data.message;
+        throw new Error(errors || 'Error creating analysis result');
+      }
+      alert('Analysis Result created successfully!');
+      window.location.href = 'patients.html?id=' + analysisResultDTO.patientId;
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    })
+    .finally(() => {
+      button.disabled = false;
+      button.innerHTML = 'Create Analysis Result';
+    });
+  }
+</script>
+</body>
+</html>

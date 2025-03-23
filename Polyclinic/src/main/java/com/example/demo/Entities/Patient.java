@@ -34,6 +34,8 @@ public class Patient {
 
     private String phone;
     private String email;
+    private String gender;
+
 
     @ManyToOne
     @JoinColumn(name = "department_id")

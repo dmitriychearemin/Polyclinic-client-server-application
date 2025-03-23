@@ -1,4 +1,4 @@
-package com.example.demo.Controllers;
+package com.example.demo.DTO;
 
 import com.example.demo.Entities.Department;
 import com.example.demo.Entities.Doctor;
@@ -20,6 +20,7 @@ public class DepartmentWithDoctorsDTO {
     private String description;
     private boolean available;
     private Integer capacity;
+
     private Integer currentNumberOfPatients;
     private DepartmentParentDTO parent;
     private Set<DepartmentWithDoctorsDTO> children;
@@ -30,11 +31,12 @@ public class DepartmentWithDoctorsDTO {
         this.id = department.getId();
         this.name = department.getName();
         this.description = department.getDescription();
-        this.available = department.isAvailable(); // Добавлено поле available
+        this.available = department.isAvailable();
         this.capacity = department.getCapacity();
         this.currentNumberOfPatients = department.getCurrentNumberOfPatients();
         this.parent = department.getParent() != null ?
                 new DepartmentParentDTO(department.getParent().getId(), department.getParent().getName()) : null;
+
         this.doctors = doctors.stream()
                 .map(doctor -> new DoctorDTO(
                         doctor.getId(),
@@ -57,20 +59,7 @@ public class DepartmentWithDoctorsDTO {
 
     }
 
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class DoctorDTO {
-        private Long id;
-        private String firstName;
-        private String lastName;
-        private String specialization;
-        private String email;
-        private String phone;
-        private Department department;
 
-    }
 
 
 }

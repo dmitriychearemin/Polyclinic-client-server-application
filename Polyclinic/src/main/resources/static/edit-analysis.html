@@ -79,34 +79,32 @@
   });
 
   function updateAnalysis() {
-  const updatedAnalysis = {
-    testType: document.getElementById('testType').value.trim(),
-    testDate: document.getElementById('testDate').value,
-    result: document.getElementById('result').value.trim(),
-    doctor: {
-      id: parseInt(document.getElementById('doctorId').value)
+    const updatedData = {
+        testType: document.getElementById('testType').value.trim(),
+        testDate: document.getElementById('testDate').value,
+        result: document.getElementById('result').value.trim(),
+        doctorId: parseInt(document.getElementById('doctorId').value)  // Изменено на doctorId
+    };
+
+    if (!updatedData.testType || !updatedData.testDate ||
+        !updatedData.result || isNaN(updatedData.doctorId)) {
+        alert('Please fill all required fields (*)');
+        return;
     }
-  };
 
-  if (!updatedAnalysis.testType || !updatedAnalysis.testDate ||
-      !updatedAnalysis.result || !updatedAnalysis.doctor.id) {
-    alert('Please fill all required fields (*)');
-    return;
-  }
-
-  fetch(`/api/analyses/${currentAnalysisId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(updatedAnalysis)
-  })
-  .then(response => {
-    if (!response.ok) throw new Error('Update failed');
-    alert('Analysis updated successfully!');
-    window.location.href = `analysis_result.html?id=${currentAnalysisId}`;
-  })
-  .catch(error => alert('Error: ' + error.message));
+    fetch(`/api/analyses/${currentAnalysisId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData)
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Update failed');
+        alert('Analysis updated successfully!');
+        window.location.href = `analysis_result.html?id=${currentAnalysisId}`;
+    })
+    .catch(error => alert('Error: ' + error.message));
 }
 </script>
 </body>
