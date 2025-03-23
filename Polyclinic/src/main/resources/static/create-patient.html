@@ -53,8 +53,12 @@
     <input type="email" id="email">
   </div>
   <div class="form-group">
+    <label for="gender">Gender</label>
+    <input type="gender" id="gender">
+  </div>
+  <div class="form-group">
     <label for="departmentId">Department ID *</label>
-    <input type="number" id="departmentId" required>
+    <input type="number" id="departmentId" required min="1">
   </div>
   <div class="form-buttons">
     <button type="button" onclick="createPatient()">Create Patient</button>
@@ -63,32 +67,50 @@
 
 <script>
   function createPatient() {
-    const patient = {
-      firstName: document.getElementById('firstName').value,
-      lastName: document.getElementById('lastName').value,
-      birthDate: document.getElementById('birthDate').value,
-      phone: document.getElementById('phone').value,
-      email: document.getElementById('email').value,
-    };
-    const departmentId = document.getElementById('departmentId').value;
+   const patientDTO = {
+     firstName: document.getElementById('firstName').value.trim(),
+     lastName: document.getElementById('lastName').value.trim(),
+     birthDate: document.getElementById('birthDate').value,
+     phone: document.getElementById('phone').value.trim(),
+     email: document.getElementById('email').value.trim(),
+     gender: document.getElementById('gender').value.trim(),
+     departmentId: document.getElementById('departmentId').value
+   };
 
-    fetch('/api/patients', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ patient, departmentId }),
-    })
-      .then(response => {
-        if (!response.ok) throw new Error('Error creating patient');
-        return response.json();
-      })
-      .then(() => {
-        alert('Patient created successfully!');
-        window.location.href = 'index.html'; // Перенаправление на главную страницу
-      })
-      .catch(error => alert(error.message));
-  }
+   if (!patientDTO.firstName || !patientDTO.lastName ||
+       !patientDTO.birthDate || !patientDTO.phone || !patientDTO.departmentId) {
+     alert('Please fill all required fields (*)');
+     return;
+   }
+
+   const button = document.querySelector('#createPatientForm button');
+   button.disabled = true;
+   button.innerHTML = 'Creating...';
+
+   fetch('/api/patients', {
+     method: 'POST',
+     headers: {
+       'Content-Type': 'application/json',
+     },
+     body: JSON.stringify(patientDTO),
+   })
+   .then(async response => {
+     const data = await response.json();
+     if (!response.ok) {
+       const errors = data.errors ? data.errors.join('\n') : data.message;
+       throw new Error(errors || 'Error creating patient');
+     }
+     alert('Patient created successfully!');
+     window.location.href = 'patients.html?departmentId=' + patientDTO.departmentId;
+   })
+   .catch(error => {
+     alert('Error: ' + error.message);
+   })
+   .finally(() => {
+     button.disabled = false;
+     button.innerHTML = 'Create Patient';
+   });
+ }
 </script>
 </body>
 </html>

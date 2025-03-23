@@ -1,5 +1,7 @@
 package com.example.demo.Controllers;
 
+import com.example.demo.DTO.DepartmentWithDoctorsDTO;
+import com.example.demo.DTO.DoctorDTO;
 import com.example.demo.Entities.Department;
 import com.example.demo.Entities.Doctor;
 import com.example.demo.Interfaces.DoctorRepository;
@@ -61,7 +63,7 @@ public class DepartmentController {
 
         List<Doctor> doctors = doctorRepository.findByDepartmentId(department.getId());
         dto.setDoctors(doctors.stream()
-                .map(doctor -> new DepartmentWithDoctorsDTO.DoctorDTO(
+                .map(doctor -> new DoctorDTO(
                         doctor.getId(),
                         doctor.getFirstName(),
                         doctor.getLastName(),
@@ -74,8 +76,8 @@ public class DepartmentController {
         return dto;
     }
 
-    private DepartmentWithDoctorsDTO.DoctorDTO convertDoctorToDTO(Doctor doctor) {
-        DepartmentWithDoctorsDTO.DoctorDTO dto = new DepartmentWithDoctorsDTO.DoctorDTO();
+    private DoctorDTO convertDoctorToDTO(Doctor doctor) {
+        DoctorDTO dto = new DoctorDTO();
         dto.setId(doctor.getId());
         dto.setFirstName(doctor.getFirstName());
         dto.setLastName(doctor.getLastName());
@@ -88,7 +90,6 @@ public class DepartmentController {
     @PostMapping
     public ResponseEntity<?> createDepartment(@Valid @RequestBody DepartmentRequest request) {
         try {
-            // Делегируем создание департамента сервису
             Department savedDepartment = departmentService.createDepartment(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedDepartment);
         } catch (EntityNotFoundException e) {
@@ -118,8 +119,30 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDepartment(@PathVariable Long id) {
-        departmentService.deleteDepartment(id);
+    public ResponseEntity<?> deleteDepartment(@PathVariable Long id) {
+        try {
+            departmentService.deleteDepartment(id);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error deleting department: " + e.getMessage());
+        }
+    }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateDepartment(@PathVariable Long id, @Valid @RequestBody DepartmentRequest request) {
+        try {
+            Department updatedDepartment = departmentService.updateDepartment(id, request);
+            return ResponseEntity.ok(updatedDepartment);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error updating department: " + e.getMessage());
+        }
     }
 }

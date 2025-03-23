@@ -33,6 +33,4 @@ public class Doctor {
 
     private String email;
     private String phone;
-
-
 }

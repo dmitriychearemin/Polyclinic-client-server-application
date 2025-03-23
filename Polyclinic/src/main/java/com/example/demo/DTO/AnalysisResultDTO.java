@@ -1,4 +1,4 @@
-package com.example.demo.Controllers;
+package com.example.demo.DTO;
 
 import com.example.demo.Entities.AnalysisResult;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,9 @@ public class AnalysisResultDTO {
     private LocalDate testDate;
     private String result;
     private String doctorName;
-    private String doctorId;
+    private Long doctorId;
+    private Long patientId;
+
 
 
     public AnalysisResultDTO(AnalysisResult analysis) {
@@ -28,7 +30,8 @@ public class AnalysisResultDTO {
         this.result = analysis.getResult();
         this.doctorName = analysis.getDoctor() != null ?
                 analysis.getDoctor().getFirstName() + " " + analysis.getDoctor().getLastName() : "N/A";
-        this.doctorId = analysis.getDoctor().getId().toString();
+        this.doctorId = analysis.getDoctor().getId();
+        this.patientId = analysis.getPatient() != null ? analysis.getPatient().getId() : null;
 
     }
 
