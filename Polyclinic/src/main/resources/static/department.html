@@ -189,8 +189,7 @@
         document.getElementById('modalSpecialization').textContent = doctor.specialization;
         document.getElementById('modalEmail').textContent = doctor.email;
         document.getElementById('modalPhone').textContent = doctor.phone;
-        document.getElementById('modalDepartment').textContent =
-          doctor.department?.name || 'No department';
+        document.getElementById('modalDepartment').textContent = doctor.departmentName;
 
         document.getElementById('doctorModal').style.display = 'block';
       } catch (error) {

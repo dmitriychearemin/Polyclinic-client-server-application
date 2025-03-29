@@ -22,6 +22,7 @@ public  class DoctorDTO {
     private Department department;
     private LocalDate hireDate;
     private Long departmentId;
+    private String departmentName;
 
     public DoctorDTO(Long id,
                      String firstName,
@@ -29,7 +30,8 @@ public  class DoctorDTO {
                      String specialization,
                      String email,
                      String phone,
-                     Department department) {
+                     Department department,
+                     String departmentName) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -37,6 +39,7 @@ public  class DoctorDTO {
         this.email = email;
         this.phone = phone;
         this.department = department;
+        this.departmentName = departmentName;
     }
 
 }

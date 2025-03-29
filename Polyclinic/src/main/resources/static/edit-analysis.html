@@ -92,7 +92,6 @@
     <textarea id="result" rows="4" required placeholder="Enter test results"></textarea>
   </div>
 
-  <!-- Поле поиска доктора -->
   <div class="form-group">
     <label for="doctorSearch">Doctor <span class="required-star">*</span></label>
     <div class="search-container">
@@ -117,40 +116,46 @@
   let allDoctors = [];
 
   document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    currentAnalysisId = urlParams.get('id');
+  const urlParams = new URLSearchParams(window.location.search);
+  currentAnalysisId = urlParams.get('id');
 
-    fetch('/api/doctors/for-selection')
-      .then(response => response.json())
-      .then(doctors => {
-        allDoctors = doctors.map(d => ({
-          id: d.id,
-          name: `${d.firstName} ${d.lastName}`,
-          specialization: d.specialization,
-          fullInfo: `Dr. ${d.firstName} ${d.lastName} (${d.specialization}, ID: ${d.id})`
-        }));
-      });
+  if (!currentAnalysisId) {
+    alert('Analysis ID not found in URL.');
+    return;
+  }
 
-    if (currentAnalysisId) {
-      fetch(`/api/analyses/${currentAnalysisId}`)
-        .then(response => response.json())
-        .then(analysis => {
-          document.getElementById('testType').value = analysis.testType;
-          document.getElementById('testDate').value = analysis.testDate;
-          document.getElementById('result').value = analysis.result;
+  Promise.all([
+    fetch('/api/doctors/for-selection'),
+    fetch(`/api/analyses/${currentAnalysisId}`)
+  ])
+  .then(async ([doctorsRes, analysisRes]) => {
+    const doctorsData = await doctorsRes.json();
+    const analysisData = await analysisRes.json();
 
-          const currentDoctor = allDoctors.find(d => d.id === analysis.doctorId);
-          if (currentDoctor) {
-            document.getElementById('doctorId').value = currentDoctor.id;
-            document.getElementById('selectedDoctor').textContent = `Selected: ${currentDoctor.fullInfo}`;
-            document.getElementById('doctorSearch').value = currentDoctor.fullInfo;
-          }
-        })
-        .catch(error => alert(error.message));
-    } else {
-      alert('Analysis ID not found in URL.');
+    allDoctors = doctorsData.map(d => ({
+      id: d.id,
+      firstName: d.firstName,
+      lastName: d.lastName,
+      specialization: d.specialization,
+      fullInfo: `Dr. ${d.firstName} ${d.lastName} (${d.specialization}, ID: ${d.id})`
+    }));
+
+    document.getElementById('testType').value = analysisData.testType || '';
+    document.getElementById('testDate').value = analysisData.testDate?.split('T')[0] || '';
+    document.getElementById('result').value = analysisData.result || '';
+
+    if (analysisData.doctorId) {
+      const currentDoctor = allDoctors.find(d => d.id === analysisData.doctorId);
+      if (currentDoctor) {
+        document.getElementById('doctorId').value = currentDoctor.id;
+        document.getElementById('selectedDoctor').textContent =
+          `Selected: ${currentDoctor.fullInfo}`;
+        document.getElementById('doctorSearch').value = currentDoctor.fullInfo;
+      }
     }
-  });
+  })
+  .catch(error => alert('Error: ' + error.message));
+});
 
   // Обработчики поиска доктора
   document.getElementById('doctorSearch').addEventListener('input', function(e) {

@@ -45,7 +45,8 @@ public class DepartmentWithDoctorsDTO {
                         doctor.getSpecialization(),
                         doctor.getEmail(),
                         doctor.getPhone(),
-                        doctor.getDepartment()))
+                        doctor.getDepartment(),
+                        doctor.getDepartment().getName()))
                 .collect(Collectors.toList());
     }
 

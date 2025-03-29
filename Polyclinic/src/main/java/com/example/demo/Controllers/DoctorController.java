@@ -86,6 +86,7 @@ public class DoctorController {
         dto.setHireDate(doctor.getHireDate());
         if (doctor.getDepartment() != null) {
             dto.setDepartmentId(doctor.getDepartment().getId());
+            dto.setDepartmentName(doctor.getDepartment().getName());
         }
         return dto;
     }
@@ -100,7 +101,8 @@ public class DoctorController {
                         d.getSpecialization(),
                         d.getPhone(),
                         d.getEmail(),
-                        d.getDepartment()
+                        d.getDepartment(),
+                        d.getDepartment().getName()
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(doctors);

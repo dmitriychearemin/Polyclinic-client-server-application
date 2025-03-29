@@ -128,7 +128,7 @@
         <input type="hidden" id="departmentId" name="departmentId">
         <div id="selectedDepartment" class="selected-item" style="display: none;">
             <span class="selected-text"></span>
-            <span class="clear-selection" onclick="clearDepartmentSelection()">×</span>
+            <span class="clear-selection" onclick="clearDepartmentSelection()">-</span>
         </div>
     </div>
 
@@ -146,34 +146,35 @@
         const urlParams = new URLSearchParams(window.location.search);
         currentDoctorId = urlParams.get('id');
 
-        fetch('/api/departments/flat')
-            .then(response => response.json())
-            .then(departments => {
-                allDepartments = departments;
-            });
+            fetch('/api/departments/flat')
+        .then(response => response.json())
+        .then(departments => {
+            allDepartments = departments;
 
-        if (currentDoctorId) {
-            fetch(`/api/doctors/${currentDoctorId}`)
-                .then(response => response.json())
-                .then(doctor => {
-                    document.getElementById('firstName').value = doctor.firstName;
-                    document.getElementById('lastName').value = doctor.lastName;
-                    document.getElementById('specialization').value = doctor.specialization;
-                    document.getElementById('email').value = doctor.email || '';
-                    document.getElementById('phone').value = doctor.phone;
+            if (currentDoctorId) {
+                fetch(`/api/doctors/${currentDoctorId}`)
+                    .then(response => response.json())
+                    .then(doctor => {
+                        document.getElementById('firstName').value = doctor.firstName;
+                        document.getElementById('lastName').value = doctor.lastName;
+                        document.getElementById('specialization').value = doctor.specialization;
+                        document.getElementById('email').value = doctor.email || '';
+                        document.getElementById('phone').value = doctor.phone;
 
-                    if (doctor.departmentId) {
-                        const department = allDepartments.find(d => d.id === doctor.departmentId);
-                        if (department) {
-                            selectDepartment({
-                                id: department.id,
-                                name: department.name
-                            });
+                        if (doctor.departmentId) {
+                            const department = allDepartments.find(d => d.id === doctor.departmentId);
+                            if (department) {
+                                selectDepartment({
+                                    id: department.id,
+                                    name: department.name
+                                });
+                            }
                         }
-                    }
-                })
-                .catch(error => alert('Error loading doctor data: ' + error.message));
-        }
+                    })
+                    .catch(error => alert('Error loading doctor data: ' + error.message));
+            }
+        })
+        .catch(error => alert('Error loading departments: ' + error.message));
     });
 
     document.getElementById('departmentSearch').addEventListener('input', function(e) {
