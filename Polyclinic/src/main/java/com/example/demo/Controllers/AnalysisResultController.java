@@ -7,71 +7,62 @@ import com.example.demo.Entities.Patient;
 import com.example.demo.Interfaces.AnalysisResultRepository;
 import com.example.demo.Interfaces.DoctorRepository;
 import com.example.demo.Interfaces.PatientRepository;
+import com.example.demo.Services.AnalysisResultService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/analyses")
 @RequiredArgsConstructor
 public class AnalysisResultController {
-    private final AnalysisResultRepository analysisResultRepository;
-    private final DoctorRepository doctorRepository;
-    private final PatientRepository patientRepository;
 
+    private final AnalysisResultService analysisResultService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<AnalysisResultDTO> getAnalysisById(@PathVariable Long id) {
-        AnalysisResult analysis = analysisResultRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Analysis not found"));
-        return ResponseEntity.ok(new AnalysisResultDTO(analysis));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<AnalysisResultDTO> updateAnalysis(
-            @PathVariable Long id,
-            @RequestBody AnalysisResultDTO request
-    ) {
-        AnalysisResult analysis = analysisResultRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Analysis not found"));
-
-        analysis.setTestType(request.getTestType());
-        analysis.setTestDate(request.getTestDate());
-        analysis.setResult(request.getResult());
-
-        if (request.getDoctorId() != null) {
-            Doctor doctor = doctorRepository.findById(request.getDoctorId())
-                    .orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
-            analysis.setDoctor(doctor);
+    public ResponseEntity<?> getAnalysisById(@PathVariable Long id) {
+        try {
+            AnalysisResult analysis = analysisResultService.getAnalysisById(id);
+            return ResponseEntity.ok(new AnalysisResultDTO(analysis));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-
-        AnalysisResult savedAnalysis = analysisResultRepository.save(analysis);
-        return ResponseEntity.ok(new AnalysisResultDTO(savedAnalysis));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAnalysis(@PathVariable Long id) {
-        analysisResultRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping
-    public ResponseEntity<AnalysisResultDTO> createAnalysis(@RequestBody AnalysisResultDTO request) {
-        Patient patient = patientRepository.findById(request.getPatientId())
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
+    public ResponseEntity<?> createAnalysis(@RequestBody AnalysisResultDTO request) {
+        try {
+            AnalysisResult createdAnalysis = analysisResultService.createAnalysis(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new AnalysisResultDTO(createdAnalysis));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
-        Doctor doctor = doctorRepository.findById(request.getDoctorId())
-                .orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateAnalysis(
+            @PathVariable Long id,
+            @RequestBody AnalysisResultDTO request
+    ) {
+        try {
+            AnalysisResult updatedAnalysis = analysisResultService.updateAnalysis(id, request);
+            return ResponseEntity.ok(new AnalysisResultDTO(updatedAnalysis));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 
-        AnalysisResult analysis = new AnalysisResult();
-        analysis.setPatient(patient);
-        analysis.setDoctor(doctor);
-        analysis.setTestType(request.getTestType());
-        analysis.setTestDate(request.getTestDate());
-        analysis.setResult(request.getResult());
-
-        AnalysisResult savedAnalysis = analysisResultRepository.save(analysis);
-        return ResponseEntity.ok(new AnalysisResultDTO(savedAnalysis));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAnalysis(@PathVariable Long id) {
+        try {
+            analysisResultService.deleteAnalysis(id);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }
