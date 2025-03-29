@@ -56,7 +56,4 @@ public class Department {
     @Column(name = "current_number_of_patients")
     private Integer currentNumberOfPatients = 0;
 
-
-
-
 }

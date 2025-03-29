@@ -6,9 +6,13 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
     }
     .back-button {
       margin-bottom: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
     }
     .form-group {
       margin-bottom: 15px;
@@ -16,14 +20,64 @@
     .form-group label {
       display: block;
       margin-bottom: 5px;
+      font-weight: bold;
     }
     .form-group input {
       width: 100%;
       padding: 8px;
       box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
     .form-buttons {
       margin-top: 20px;
+      text-align: right;
+    }
+    button[type="button"] {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button[type="button"]:hover {
+      background-color: #0056b3;
+    }
+    .required-star {
+      color: red;
+      font-size: 0.8em;
+    }
+    /* Стили для поиска */
+    .search-container {
+      position: relative;
+      margin-top: 5px;
+    }
+    .search-results {
+      position: absolute;
+      background: white;
+      border: 1px solid #ddd;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .search-item {
+      padding: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .search-item:hover {
+      background-color: #f8f9fa;
+    }
+    .selected-item {
+      margin-top: 5px;
+      padding: 5px;
+      background: #e9ecef;
+      border-radius: 4px;
+      display: inline-block;
     }
   </style>
 </head>
@@ -32,39 +86,157 @@
 <h1>Create New Analysis Result</h1>
 
 <form id="createAnalysisResultForm">
+  <!-- Поле поиска пациента -->
   <div class="form-group">
-    <label for="patientId">Patient ID *</label>
-    <input type="number" id="patientId" required min="1">
+    <label for="patientSearch">Patient <span class="required-star">*</span></label>
+    <div class="search-container">
+      <input type="text"
+             id="patientSearch"
+             placeholder="Search patient..."
+             onclick="togglePatientList()"
+             autocomplete="off">
+      <div id="patientResults" class="search-results"></div>
+    </div>
+    <input type="hidden" id="patientId" name="patientId">
+    <div id="selectedPatient" class="selected-item"></div>
   </div>
+
+  <!-- Поле поиска врача -->
   <div class="form-group">
-    <label for="doctorId">Doctor ID *</label>
-    <input type="number" id="doctorId" required min="1">
+    <label for="doctorSearch">Doctor <span class="required-star">*</span></label>
+    <div class="search-container">
+      <input type="text"
+             id="doctorSearch"
+             placeholder="Search doctor..."
+             onclick="toggleDoctorList()"
+             autocomplete="off">
+      <div id="doctorResults" class="search-results"></div>
+    </div>
+    <input type="hidden" id="doctorId" name="doctorId">
+    <div id="selectedDoctor" class="selected-item"></div>
   </div>
+
+  <!-- Остальные поля остаются без изменений -->
   <div class="form-group">
-    <label for="testType">Test Type *</label>
-    <input type="text" id="testType" required>
+    <label for="testType">Test Type <span class="required-star">*</span></label>
+    <input type="text" id="testType" required placeholder="Blood test">
   </div>
+
   <div class="form-group">
-    <label for="testDate">Test Date *</label>
+    <label for="testDate">Test Date <span class="required-star">*</span></label>
     <input type="date" id="testDate" required>
   </div>
+
   <div class="form-group">
-    <label for="result">Result *</label>
-    <input type="text" id="result" required>
+    <label for="result">Result <span class="required-star">*</span></label>
+    <input type="text" id="result" required placeholder="Enter test results">
   </div>
+
   <div class="form-buttons">
     <button type="button" onclick="createAnalysisResult()">Create Analysis Result</button>
   </div>
 </form>
 
 <script>
+  window.onload = function() {
+    fetch('/api/patients')
+      .then(response => response.json())
+      .then(patients => {
+        window.allPatients = patients.map(p => ({
+          id: p.id,
+          name: `${p.firstName} ${p.lastName}`,
+          fullInfo: `${p.firstName} ${p.lastName} (ID: ${p.id})`
+        }));
+      });
+
+    fetch('/api/doctors/for-selection')
+      .then(response => response.json())
+      .then(doctors => {
+        window.allDoctors = doctors.map(d => ({
+          id: d.id,
+          name: `${d.firstName} ${d.lastName}`,
+          specialization: d.specialization,
+          fullInfo: `Dr. ${d.firstName} ${d.lastName} (${d.specialization}, ID: ${d.id})`
+        }));
+      });
+  };
+
+  function togglePatientList() {
+    const results = document.getElementById('patientResults');
+    results.style.display = results.style.display === 'none' ? 'block' : 'block';
+    populatePatientList(window.allPatients);
+  }
+
+  function populatePatientList(patients) {
+    const resultsContainer = document.getElementById('patientResults');
+    resultsContainer.innerHTML = '';
+
+    patients.forEach(patient => {
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      div.textContent = patient.fullInfo;
+      div.onclick = () => selectPatient(patient);
+      resultsContainer.appendChild(div);
+    });
+  }
+
+  function selectPatient(patient) {
+    document.getElementById('patientId').value = patient.id;
+    document.getElementById('selectedPatient').textContent = `Selected: ${patient.fullInfo}`;
+    document.getElementById('patientResults').style.display = 'none';
+  }
+
+  function toggleDoctorList() {
+    const results = document.getElementById('doctorResults');
+    results.style.display = results.style.display === 'none' ? 'block' : 'block';
+    populateDoctorList(window.allDoctors);
+  }
+
+  function populateDoctorList(doctors) {
+    const resultsContainer = document.getElementById('doctorResults');
+    resultsContainer.innerHTML = '';
+
+    doctors.forEach(doctor => {
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      div.textContent = doctor.fullInfo;
+      div.onclick = () => selectDoctor(doctor);
+      resultsContainer.appendChild(div);
+    });
+  }
+
+  function selectDoctor(doctor) {
+    document.getElementById('doctorId').value = doctor.id;
+    document.getElementById('selectedDoctor').textContent = `Selected: ${doctor.fullInfo}`;
+    document.getElementById('doctorResults').style.display = 'none';
+  }
+
+  document.getElementById('patientSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const filtered = window.allPatients.filter(patient =>
+      patient.name.toLowerCase().includes(searchTerm) ||
+      patient.id.toString().includes(searchTerm)
+    );
+    populatePatientList(filtered);
+  });
+
+  document.getElementById('doctorSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const filtered = window.allDoctors.filter(doctor =>
+      doctor.name.toLowerCase().includes(searchTerm) ||
+      doctor.specialization.toLowerCase().includes(searchTerm) ||
+      doctor.id.toString().includes(searchTerm)
+    );
+    populateDoctorList(filtered);
+  });
+
   function createAnalysisResult() {
- const analysisResultDTO = {
-        patientId: parseInt(document.getElementById('patientId').value),
-        doctorId: parseInt(document.getElementById('doctorId').value),
-        testType: document.getElementById('testType').value.trim(),
-        testDate: document.getElementById('testDate').value,
-        result: document.getElementById('result').value.trim()
+    const analysisResultDTO = {
+      patientId: parseInt(document.getElementById('patientId').value),
+      doctorId: parseInt(document.getElementById('doctorId').value),
+      testType: document.getElementById('testType').value.trim(),
+      testDate: document.getElementById('testDate').value,
+      result: document.getElementById('result').value.trim()
     };
 
     if (!analysisResultDTO.patientId || !analysisResultDTO.doctorId ||
@@ -79,9 +251,7 @@
 
     fetch('/api/analyses', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(analysisResultDTO),
     })
     .then(async response => {

@@ -6,9 +6,13 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
     }
     .back-button {
       margin-bottom: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
     }
     .form-group {
       margin-bottom: 15px;
@@ -16,16 +20,55 @@
     .form-group label {
       display: block;
       margin-bottom: 5px;
+      font-weight: bold;
     }
-    .form-group input, .form-group textarea {
+    .form-group input,
+    .form-group textarea {
       width: 100%;
       padding: 8px;
       box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
     .form-buttons {
       margin-top: 20px;
       display: flex;
       gap: 10px;
+    }
+    /* Стили для поиска доктора */
+    .search-container {
+      position: relative;
+      margin-top: 5px;
+    }
+    .search-results {
+      position: absolute;
+      background: white;
+      border: 1px solid #ddd;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .search-item {
+      padding: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .search-item:hover {
+      background-color: #f8f9fa;
+    }
+    .selected-item {
+      margin-top: 5px;
+      padding: 5px;
+      background: #e9ecef;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .required-star {
+      color: red;
+      font-size: 0.8em;
     }
   </style>
 </head>
@@ -35,21 +78,34 @@
 
 <form id="editAnalysisForm">
   <div class="form-group">
-    <label for="testType">Test Type *</label>
-    <input type="text" id="testType" required>
+    <label for="testType">Test Type <span class="required-star">*</span></label>
+    <input type="text" id="testType" required placeholder="Blood test">
   </div>
+
   <div class="form-group">
-    <label for="testDate">Test Date *</label>
+    <label for="testDate">Test Date <span class="required-star">*</span></label>
     <input type="date" id="testDate" required>
   </div>
+
   <div class="form-group">
-    <label for="result">Result *</label>
-    <textarea id="result" rows="4" required></textarea>
+    <label for="result">Result <span class="required-star">*</span></label>
+    <textarea id="result" rows="4" required placeholder="Enter test results"></textarea>
   </div>
+
+  <!-- Поле поиска доктора -->
   <div class="form-group">
-    <label for="doctorId">Doctor ID *</label>
-    <input type="number" id="doctorId" required>
+    <label for="doctorSearch">Doctor <span class="required-star">*</span></label>
+    <div class="search-container">
+      <input type="text"
+             id="doctorSearch"
+             placeholder="Search doctor..."
+             autocomplete="off">
+      <div id="doctorResults" class="search-results"></div>
+    </div>
+    <input type="hidden" id="doctorId" name="doctorId">
+    <div id="selectedDoctor" class="selected-item"></div>
   </div>
+
   <div class="form-buttons">
     <button type="button" onclick="window.history.back()">Cancel</button>
     <button type="button" onclick="updateAnalysis()">Save Changes</button>
@@ -58,10 +114,23 @@
 
 <script>
   let currentAnalysisId;
+  let allDoctors = [];
 
   document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentAnalysisId = urlParams.get('id');
+
+    // Загрузка списка докторов
+    fetch('/api/doctors/for-selection')
+      .then(response => response.json())
+      .then(doctors => {
+        allDoctors = doctors.map(d => ({
+          id: d.id,
+          name: `${d.firstName} ${d.lastName}`,
+          specialization: d.specialization,
+          fullInfo: `Dr. ${d.firstName} ${d.lastName} (${d.specialization}, ID: ${d.id})`
+        }));
+      });
 
     if (currentAnalysisId) {
       fetch(`/api/analyses/${currentAnalysisId}`)
@@ -70,7 +139,14 @@
           document.getElementById('testType').value = analysis.testType;
           document.getElementById('testDate').value = analysis.testDate;
           document.getElementById('result').value = analysis.result;
-          document.getElementById('doctorId').value = analysis.doctorId || '';
+
+          // Установка выбранного доктора
+          const currentDoctor = allDoctors.find(d => d.id === analysis.doctorId);
+          if (currentDoctor) {
+            document.getElementById('doctorId').value = currentDoctor.id;
+            document.getElementById('selectedDoctor').textContent = `Selected: ${currentDoctor.fullInfo}`;
+            document.getElementById('doctorSearch').value = currentDoctor.fullInfo;
+          }
         })
         .catch(error => alert(error.message));
     } else {
@@ -78,34 +154,70 @@
     }
   });
 
+  // Обработчики поиска доктора
+  document.getElementById('doctorSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const filtered = allDoctors.filter(doctor =>
+      doctor.fullInfo.toLowerCase().includes(searchTerm)
+    );
+    populateDoctorList(filtered);
+  });
+
+  document.getElementById('doctorSearch').addEventListener('focus', function() {
+    populateDoctorList(allDoctors);
+    document.getElementById('doctorResults').style.display = 'block';
+  });
+
+  function populateDoctorList(doctors) {
+    const resultsContainer = document.getElementById('doctorResults');
+    resultsContainer.innerHTML = '';
+
+    doctors.forEach(doctor => {
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      div.textContent = doctor.fullInfo;
+      div.onclick = () => selectDoctor(doctor);
+      resultsContainer.appendChild(div);
+    });
+  }
+
+  function selectDoctor(doctor) {
+    document.getElementById('doctorId').value = doctor.id;
+    document.getElementById('selectedDoctor').textContent = `Selected: ${doctor.fullInfo}`;
+    document.getElementById('doctorSearch').value = doctor.fullInfo;
+    document.getElementById('doctorResults').style.display = 'none';
+  }
+
   function updateAnalysis() {
     const updatedData = {
-        testType: document.getElementById('testType').value.trim(),
-        testDate: document.getElementById('testDate').value,
-        result: document.getElementById('result').value.trim(),
-        doctorId: parseInt(document.getElementById('doctorId').value)  // Изменено на doctorId
+      testType: document.getElementById('testType').value.trim(),
+      testDate: document.getElementById('testDate').value,
+      result: document.getElementById('result').value.trim(),
+      doctorId: parseInt(document.getElementById('doctorId').value)
     };
 
     if (!updatedData.testType || !updatedData.testDate ||
         !updatedData.result || isNaN(updatedData.doctorId)) {
-        alert('Please fill all required fields (*)');
-        return;
+      alert('Please fill all required fields (*)');
+      return;
     }
 
     fetch(`/api/analyses/${currentAnalysisId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData)
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedData)
     })
-    .then(response => {
-        if (!response.ok) throw new Error('Update failed');
-        alert('Analysis updated successfully!');
-        window.location.href = `analysis_result.html?id=${currentAnalysisId}`;
+    .then(async response => {
+      const data = await response.json();
+      if (!response.ok) {
+        const errors = data.errors ? data.errors.join('\n') : data.message;
+        throw new Error(errors || 'Error updating analysis');
+      }
+      alert('Analysis updated successfully!');
+      window.location.href = `analysis_result.html?id=${currentAnalysisId}`;
     })
     .catch(error => alert('Error: ' + error.message));
-}
+  }
 </script>
 </body>
 </html>

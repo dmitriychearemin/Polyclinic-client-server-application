@@ -15,11 +15,14 @@
     .form-group label {
       display: block;
       margin-bottom: 5px;
+      font-weight: bold;
     }
     .form-group input {
       width: 100%;
       padding: 8px;
       box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
     .form-buttons {
       margin-top: 20px;
@@ -29,70 +32,170 @@
     .form-buttons button {
       padding: 8px 16px;
       cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    .form-buttons button:hover {
+      background-color: #0056b3;
+    }
+    .department-search {
+      position: relative;
+      margin-top: 5px;
+    }
+    .department-results {
+      position: absolute;
+      background: white;
+      border: 1px solid #ddd;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .department-item {
+      padding: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .department-item:hover {
+      background-color: #f8f9fa;
+    }
+    .selected-department {
+      margin-top: 5px;
+      padding: 5px;
+      background: #e9ecef;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .required-star {
+      color: red;
+      margin-left: 3px;
     }
   </style>
 </head>
 <body>
-<h1>Create Department</h1>
+<h1>Create New Department</h1>
 <form id="createDepartmentForm">
   <div class="form-group">
-    <label for="name">Name *</label>
-    <input type="text" id="name" required>
+    <label for="name">Department Name <span class="required-star">*</span></label>
+    <input type="text" id="name" required placeholder="Enter department name">
   </div>
+
   <div class="form-group">
-    <label for="description">Description *</label>
-    <input type="text" id="description" required>
+    <label for="description">Description <span class="required-star">*</span></label>
+    <input type="text" id="description" required placeholder="Enter department description">
   </div>
+
   <div class="form-group">
-    <label for="capacity">Capacity *</label>
-    <input type="number" id="capacity" required>
+    <label for="capacity">Capacity <span class="required-star">*</span></label>
+    <input type="number" id="capacity" required min="1" placeholder="Enter patient capacity">
   </div>
+
+  <!-- Поле выбора родительского отдела -->
   <div class="form-group">
-    <label for="parentId">Parent ID (optional)</label>
-    <input type="number" id="parentId">
+    <label>Parent Department (optional)</label>
+    <div class="department-search">
+      <input type="text"
+             id="departmentSearch"
+             placeholder="Search department..."
+             onclick="toggleDepartmentList()"
+             autocomplete="off">
+      <div id="departmentResults" class="department-results"></div>
+    </div>
+    <input type="hidden" id="parentId" name="parentId">
+    <div id="selectedDepartment" class="selected-department"></div>
   </div>
+
+  <!-- Кнопки управления -->
   <div class="form-buttons">
-    <button type="button" onclick="window.history.back()">Back</button> <!-- Изменено здесь -->
-    <button type="button" onclick="createDepartment()">Save</button>
+    <button type="button" onclick="window.history.back()">Cancel</button>
+    <button type="button" onclick="createDepartment()">Create Department</button>
   </div>
 </form>
 
 <script>
-  function createDepartment() {
+  // Остальной JavaScript код остается без изменений
+  window.onload = function() {
+    fetch('/api/departments/flat')
+      .then(response => response.json())
+      .then(departments => {
+        window.allDepartments = departments;
+        populateDepartmentList(departments);
+      });
+  };
+
+  function populateDepartmentList(departments) {
+    const resultsContainer = document.getElementById('departmentResults');
+    resultsContainer.innerHTML = '';
+
+    departments.forEach(dept => {
+      const div = document.createElement('div');
+      div.className = 'department-item';
+      div.textContent = `${dept.name} (ID: ${dept.id})`;
+      div.onclick = () => selectDepartment(dept);
+      resultsContainer.appendChild(div);
+    });
+  }
+
+  function toggleDepartmentList() {
+    const results = document.getElementById('departmentResults');
+    results.style.display = results.style.display === 'none' ? 'block' : 'block';
+  }
+
+  function selectDepartment(dept) {
+    document.getElementById('parentId').value = dept.id;
+    document.getElementById('selectedDepartment').textContent =
+      `Selected: ${dept.name} (ID: ${dept.id})`;
+    document.getElementById('departmentResults').style.display = 'none';
+  }
+
+  document.getElementById('departmentSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const filtered = window.allDepartments.filter(dept =>
+      dept.name.toLowerCase().includes(searchTerm) ||
+      dept.id.toString().includes(searchTerm)
+    );
+    populateDepartmentList(filtered);
+  });
+
+  async function createDepartment() {
     const name = document.getElementById('name').value.trim();
     const description = document.getElementById('description').value.trim();
     const capacity = document.getElementById('capacity').value;
     const parentId = document.getElementById('parentId').value;
 
-    // Проверка обязательных полей
+    // Валидация
     if (!name || !description || !capacity) {
-      alert('Please fill all required fields (*)');
+      alert('Please fill all required fields (marked with *)');
       return;
     }
 
     const departmentData = {
-      name: name,
-      description: description,
+      name,
+      description,
       capacity: parseInt(capacity),
       parentId: parentId ? parseInt(parentId) : null
     };
 
-    // Отправка данных на сервер
-    fetch('/api/departments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(departmentData),
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('Error creating department');
+    try {
+      const response = await fetch('/api/departments', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(departmentData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) throw new Error(result.message || 'Error creating department');
+
       alert('Department created successfully!');
-      window.location.href = 'index.html'; // Возврат на главную страницу
-    })
-    .catch(error => {
+      window.location.href = 'index.html';
+    } catch (error) {
       alert('Error: ' + error.message);
-    });
+    }
   }
 </script>
 </body>

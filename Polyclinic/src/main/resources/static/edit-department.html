@@ -4,28 +4,35 @@
     <title>Edit Department</title>
     <style>
         body {
-          font-family: Arial, sans-serif;
-          padding: 20px;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
         }
         .back-button {
-          margin-bottom: 20px;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
         }
         .form-group {
-          margin-bottom: 15px;
+            margin-bottom: 15px;
         }
         .form-group label {
-          display: block;
-          margin-bottom: 5px;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
         .form-group input {
-          width: 100%;
-          padding: 8px;
-          box-sizing: border-box;
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         .form-buttons {
-          margin-top: 20px;
-          display: flex;
-          gap: 10px;
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
         }
         .delete-btn {
             background-color: #ff4444;
@@ -33,7 +40,11 @@
             margin-left: auto;
         }
         .delete-btn:hover {
-         background-color: #cc0000;
+            background-color: #cc0000;
+        }
+        .required-star {
+            color: red;
+            font-size: 0.8em;
         }
     </style>
 </head>
@@ -43,21 +54,20 @@
 
 <form id="editDepartmentForm">
     <div class="form-group">
-        <label for="editName">Name *</label>
+        <label for="editName">Name <span class="required-star">*</span></label>
         <input type="text" id="editName" required>
     </div>
+
     <div class="form-group">
-        <label for="editDescription">Description *</label>
+        <label for="editDescription">Description <span class="required-star">*</span></label>
         <input type="text" id="editDescription" required>
     </div>
+
     <div class="form-group">
-        <label for="editCapacity">Capacity *</label>
-        <input type="number" id="editCapacity" required>
+        <label for="editCapacity">Capacity <span class="required-star">*</span></label>
+        <input type="number" id="editCapacity" required min="1">
     </div>
-    <div class="form-group">
-        <label for="editParentId">Parent ID (optional)</label>
-        <input type="number" id="editParentId">
-    </div>
+
     <div class="form-buttons">
         <button type="button" onclick="window.history.back()">Cancel</button>
         <button type="button" onclick="deleteDepartment()" class="delete-btn">Delete Department</button>
@@ -69,18 +79,59 @@
     let currentDepartmentId;
 
     document.addEventListener('DOMContentLoaded', function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      currentDepartmentId = urlParams.get('id');
+        const urlParams = new URLSearchParams(window.location.search);
+        currentDepartmentId = urlParams.get('id');
 
-      if (!currentDepartmentId) {
-        alert('Department ID is missing.');
-        return;
-      }
+        if (!currentDepartmentId) {
+            alert('Department ID is missing.');
+            return;
+        }
 
-      loadDepartmentData(currentDepartmentId);
+        loadDepartmentData(currentDepartmentId);
     });
 
-        function deleteDepartment() {
+    function loadDepartmentData(departmentId) {
+        fetch(`/api/departments/${departmentId}`)
+            .then(response => response.json())
+            .then(department => {
+                document.getElementById('editName').value = department.name;
+                document.getElementById('editDescription').value = department.description;
+                document.getElementById('editCapacity').value = department.capacity;
+            })
+            .catch(error => alert('Error loading department: ' + error.message));
+    }
+
+    function updateDepartment() {
+        const updatedData = {
+            name: document.getElementById('editName').value.trim(),
+            description: document.getElementById('editDescription').value.trim(),
+            capacity: parseInt(document.getElementById('editCapacity').value)
+        };
+
+        if (!updatedData.name || !updatedData.description || !updatedData.capacity) {
+            alert('Please fill all required fields (*)');
+            return;
+        }
+
+        fetch(`/api/departments/${currentDepartmentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData),
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Error updating department');
+            }
+            alert('Department updated successfully!');
+            window.location.href = `department-details.html?id=${currentDepartmentId}`;
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    }
+
+    function deleteDepartment() {
         if (!confirm('Are you sure you want to delete this department? This action cannot be undone!')) {
             return;
         }
@@ -94,57 +145,7 @@
                 throw new Error(text || 'Error deleting department');
             }
             alert('Department deleted successfully!');
-            window.location.href = 'departments-list.html'; // Перенаправление на список
-        })
-        .catch(error => {
-            alert('Error: ' + error.message);
-        });
-    }
-
-    function loadDepartmentData(departmentId) {
-      fetch(`/api/departments/${departmentId}`)
-        .then(response => response.json())
-        .then(department => {
-          document.getElementById('editName').value = department.name;
-          document.getElementById('editDescription').value = department.description;
-          document.getElementById('editCapacity').value = department.capacity;
-          document.getElementById('editParentId').value = department.parent?.id || '';
-        })
-        .catch(error => alert('Error loading department: ' + error.message));
-    }
-
-    function updateDepartment() {
-        const name = document.getElementById('editName').value.trim();
-        const description = document.getElementById('editDescription').value.trim();
-        const capacity = document.getElementById('editCapacity').value;
-        const parentId = document.getElementById('editParentId').value;
-
-        if (!name || !description || !capacity) {
-            alert('Please fill all required fields (*)');
-            return;
-        }
-
-        const updatedData = {
-            name: name,
-            description: description,
-            capacity: parseInt(capacity),
-            parentId: parentId ? parseInt(parentId) : null
-        };
-
-        fetch(`/api/departments/${currentDepartmentId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatedData),
-        })
-        .then(async response => {
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || 'Error updating department');
-            }
-            alert('Department updated successfully!');
-            window.location.href = `department-details.html?id=${currentDepartmentId}`;
+            window.location.href = 'departments-list.html';
         })
         .catch(error => {
             alert('Error: ' + error.message);

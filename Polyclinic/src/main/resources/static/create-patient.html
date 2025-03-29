@@ -6,9 +6,13 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
     }
     .back-button {
       margin-bottom: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
     }
     .form-group {
       margin-bottom: 15px;
@@ -16,14 +20,64 @@
     .form-group label {
       display: block;
       margin-bottom: 5px;
+      font-weight: bold;
     }
-    .form-group input {
+    .form-group input, .form-group select {
       width: 100%;
       padding: 8px;
       box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
     .form-buttons {
       margin-top: 20px;
+      text-align: right;
+    }
+    button[type="button"] {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button[type="button"]:hover {
+      background-color: #0056b3;
+    }
+    .required-star {
+      color: red;
+      font-size: 0.8em;
+    }
+    /* Стили для поиска департаментов */
+    .department-search {
+      position: relative;
+      margin-top: 5px;
+    }
+    .department-results {
+      position: absolute;
+      background: white;
+      border: 1px solid #ddd;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .department-item {
+      padding: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .department-item:hover {
+      background-color: #f8f9fa;
+    }
+    .selected-department {
+      margin-top: 5px;
+      padding: 5px;
+      background: #e9ecef;
+      border-radius: 4px;
+      display: inline-block;
     }
   </style>
 </head>
@@ -33,84 +87,160 @@
 
 <form id="createPatientForm">
   <div class="form-group">
-    <label for="firstName">First Name *</label>
-    <input type="text" id="firstName" required>
+    <label for="firstName">First Name <span class="required-star">*</span></label>
+    <input type="text" id="firstName" required placeholder="John">
   </div>
+
   <div class="form-group">
-    <label for="lastName">Last Name *</label>
-    <input type="text" id="lastName" required>
+    <label for="lastName">Last Name <span class="required-star">*</span></label>
+    <input type="text" id="lastName" required placeholder="Doe">
   </div>
+
   <div class="form-group">
-    <label for="birthDate">Birth Date *</label>
+    <label for="birthDate">Birth Date <span class="required-star">*</span></label>
     <input type="date" id="birthDate" required>
   </div>
+
   <div class="form-group">
-    <label for="phone">Phone *</label>
-    <input type="tel" id="phone" required>
+    <label for="phone">Phone <span class="required-star">*</span></label>
+    <input type="tel" id="phone" required placeholder="+1234567890"
+           pattern="^\+?[0-9\-\s()]{7,20}$">
   </div>
+
   <div class="form-group">
     <label for="email">Email</label>
-    <input type="email" id="email">
+    <input type="email" id="email" placeholder="john.doe@example.com">
   </div>
+
   <div class="form-group">
     <label for="gender">Gender</label>
-    <input type="gender" id="gender">
+    <select id="gender">
+      <option value="">Select Gender</option>
+      <option value="MALE">Male</option>
+      <option value="FEMALE">Female</option>
+      <option value="OTHER">Other</option>
+    </select>
   </div>
+
   <div class="form-group">
-    <label for="departmentId">Department ID *</label>
-    <input type="number" id="departmentId" required min="1">
+    <label for="departmentSearch">Department <span class="required-star">*</span></label>
+    <div class="department-search">
+      <input type="text"
+             id="departmentSearch"
+             placeholder="Search department..."
+             onclick="toggleDepartmentList()"
+             autocomplete="off">
+      <div id="departmentResults" class="department-results"></div>
+    </div>
+    <input type="hidden" id="departmentId" name="departmentId">
+    <div id="selectedDepartment" class="selected-department"></div>
   </div>
+
   <div class="form-buttons">
     <button type="button" onclick="createPatient()">Create Patient</button>
   </div>
 </form>
 
 <script>
+  window.onload = function() {
+    fetch('/api/departments/flat')
+      .then(response => response.json())
+      .then(departments => {
+        window.allDepartments = departments;
+        populateDepartmentList(departments);
+      });
+  };
+
+  function populateDepartmentList(departments) {
+    const resultsContainer = document.getElementById('departmentResults');
+    resultsContainer.innerHTML = '';
+
+    departments.forEach(dept => {
+      const div = document.createElement('div');
+      div.className = 'department-item';
+      div.textContent = `${dept.name} (ID: ${dept.id})`;
+      div.onclick = () => selectDepartment(dept);
+      resultsContainer.appendChild(div);
+    });
+  }
+
+  function toggleDepartmentList() {
+    const results = document.getElementById('departmentResults');
+    results.style.display = results.style.display === 'none' ? 'block' : 'block';
+  }
+
+  function selectDepartment(dept) {
+    document.getElementById('departmentId').value = dept.id;
+    document.getElementById('selectedDepartment').textContent =
+      `Selected: ${dept.name} (ID: ${dept.id})`;
+    document.getElementById('departmentResults').style.display = 'none';
+  }
+
+  document.getElementById('departmentSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const filtered = window.allDepartments.filter(dept =>
+      dept.name.toLowerCase().includes(searchTerm) ||
+      dept.id.toString().includes(searchTerm)
+    );
+    populateDepartmentList(filtered);
+  });
+
   function createPatient() {
-   const patientDTO = {
-     firstName: document.getElementById('firstName').value.trim(),
-     lastName: document.getElementById('lastName').value.trim(),
-     birthDate: document.getElementById('birthDate').value,
-     phone: document.getElementById('phone').value.trim(),
-     email: document.getElementById('email').value.trim(),
-     gender: document.getElementById('gender').value.trim(),
-     departmentId: document.getElementById('departmentId').value
-   };
+    const patientDTO = {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        birthDate: document.getElementById('birthDate').value,
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        gender: document.getElementById('gender').value.trim(),
+        departmentId: document.getElementById('departmentId').value
+    };
 
-   if (!patientDTO.firstName || !patientDTO.lastName ||
-       !patientDTO.birthDate || !patientDTO.phone || !patientDTO.departmentId) {
-     alert('Please fill all required fields (*)');
-     return;
-   }
+    // Валидация на клиенте
+    const errors = [];
+    if (!patientDTO.firstName) errors.push("First name is required");
+    if (!patientDTO.lastName) errors.push("Last name is required");
+    if (!patientDTO.birthDate) errors.push("Birth date is required");
+    if (!patientDTO.phone) errors.push("Phone is required");
+    if (!patientDTO.departmentId) errors.push("Department is required");
 
-   const button = document.querySelector('#createPatientForm button');
-   button.disabled = true;
-   button.innerHTML = 'Creating...';
+    if (errors.length > 0) {
+        alert("Validation errors:\n" + errors.join("\n"));
+        return;
+    }
 
-   fetch('/api/patients', {
-     method: 'POST',
-     headers: {
-       'Content-Type': 'application/json',
-     },
-     body: JSON.stringify(patientDTO),
-   })
-   .then(async response => {
-     const data = await response.json();
-     if (!response.ok) {
-       const errors = data.errors ? data.errors.join('\n') : data.message;
-       throw new Error(errors || 'Error creating patient');
-     }
-     alert('Patient created successfully!');
-     window.location.href = 'patients.html?departmentId=' + patientDTO.departmentId;
-   })
-   .catch(error => {
-     alert('Error: ' + error.message);
-   })
-   .finally(() => {
-     button.disabled = false;
-     button.innerHTML = 'Create Patient';
-   });
- }
+    const button = document.querySelector('#createPatientForm button');
+    button.disabled = true;
+    button.innerHTML = 'Creating...';
+
+    fetch('/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patientDTO),
+    })
+    .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+            // Обработка ошибок валидации
+            if (data.error) {
+                throw new Error(data.error);
+            } else if (data.errors) {
+                throw new Error(Object.values(data.errors).join('\n'));
+            } else {
+                throw new Error('Unknown error occurred');
+            }
+        }
+        alert('Patient created successfully!');
+        window.location.href = 'patients.html?departmentId=' + patientDTO.departmentId;
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.innerHTML = 'Create Patient';
+    });
+}
 </script>
 </body>
 </html>

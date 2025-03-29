@@ -145,4 +145,15 @@ public class DepartmentController {
             return ResponseEntity.internalServerError().body("Error updating department: " + e.getMessage());
         }
     }
+
+
+
+    @GetMapping("/flat")
+    public ResponseEntity<List<DepartmentWithDoctorsDTO.DepartmentParentDTO>> getAllDepartmentsFlat() {
+        List<Department> departments = departmentService.getAllDepartmentsFlat();
+        List<DepartmentWithDoctorsDTO.DepartmentParentDTO> dtos = departments.stream()
+                .map(d -> new DepartmentWithDoctorsDTO.DepartmentParentDTO(d.getId(), d.getName()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
 }
