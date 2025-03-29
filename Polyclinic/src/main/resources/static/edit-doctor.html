@@ -252,7 +252,7 @@
                 throw new Error(errors || 'Error updating doctor');
             }
             alert('Doctor updated successfully!');
-            window.location.href = `doctor-details.html?id=${currentDoctorId}`;
+            window.location.href = 'index.html';
         })
         .catch(error => {
             alert('Error: ' + error.message);

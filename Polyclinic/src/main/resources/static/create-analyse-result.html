@@ -261,8 +261,7 @@
         throw new Error(errors || 'Error creating analysis result');
       }
       alert('Analysis Result created successfully!');
-      window.location.href = 'patients.html?id=' + analysisResultDTO.patientId;
-    })
+      window.location.href = 'index.html';    })
     .catch(error => {
       alert('Error: ' + error.message);
     })

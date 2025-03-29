@@ -124,7 +124,7 @@
                 throw new Error(data.message || 'Error updating department');
             }
             alert('Department updated successfully!');
-            window.location.href = `department-details.html?id=${currentDepartmentId}`;
+            window.location.href = 'index.html';
         })
         .catch(error => {
             alert('Error: ' + error.message);
@@ -145,7 +145,7 @@
                 throw new Error(text || 'Error deleting department');
             }
             alert('Department deleted successfully!');
-            window.location.href = 'departments-list.html';
+            window.location.href = 'index.html';
         })
         .catch(error => {
             alert('Error: ' + error.message);

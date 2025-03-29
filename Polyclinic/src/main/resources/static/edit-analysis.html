@@ -120,7 +120,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     currentAnalysisId = urlParams.get('id');
 
-    // Загрузка списка докторов
     fetch('/api/doctors/for-selection')
       .then(response => response.json())
       .then(doctors => {
@@ -140,7 +139,6 @@
           document.getElementById('testDate').value = analysis.testDate;
           document.getElementById('result').value = analysis.result;
 
-          // Установка выбранного доктора
           const currentDoctor = allDoctors.find(d => d.id === analysis.doctorId);
           if (currentDoctor) {
             document.getElementById('doctorId').value = currentDoctor.id;
@@ -214,7 +212,7 @@
         throw new Error(errors || 'Error updating analysis');
       }
       alert('Analysis updated successfully!');
-      window.location.href = `analysis_result.html?id=${currentAnalysisId}`;
+      window.location.href = 'index.html';
     })
     .catch(error => alert('Error: ' + error.message));
   }

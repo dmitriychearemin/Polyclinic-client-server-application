@@ -86,7 +86,7 @@
   </style>
 </head>
 <body>
-<button class="back-button" onclick="window.history.back()">← Back</button>
+<button class="back-button" onclick="window.history.back()">Back</button>
 <h1>Edit Patient</h1>
 
 <form id="editPatientForm">
@@ -267,7 +267,7 @@
         throw new Error(errors || 'Error updating patient');
       }
       alert('Patient updated successfully!');
-      window.location.href = `patients.html?departmentId=${patientDTO.departmentId}`;
+     window.location.href = 'index.html';
     })
     .catch(error => {
       alert('Error: ' + error.message);
