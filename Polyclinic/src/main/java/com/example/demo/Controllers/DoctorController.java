@@ -46,7 +46,7 @@ public class DoctorController {
             return ResponseEntity.internalServerError().body("Error creating doctor: " + e.getMessage());
         }
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDoctor(
             @PathVariable Long id,
