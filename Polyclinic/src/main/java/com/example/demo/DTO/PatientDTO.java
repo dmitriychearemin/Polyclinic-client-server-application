@@ -49,4 +49,7 @@ public class PatientDTO {
         this.departmentName = patient.getDepartment() != null ?
                 patient.getDepartment().getName() : "N/A";
     }
+
+    
+
 }

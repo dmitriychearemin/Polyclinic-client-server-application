@@ -1,9 +1,12 @@
 package com.example.demo.Controllers;
 
 import com.example.demo.DTO.AnalysisResultDTO;
+import com.example.demo.DTO.DepartmentWithDoctorsDTO;
 import com.example.demo.DTO.PatientDTO;
+import com.example.demo.Entities.Department;
 import com.example.demo.Entities.Patient;
 import com.example.demo.Interfaces.PatientRepository;
+import com.example.demo.Services.DepartmentService;
 import com.example.demo.Services.PatientService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -28,6 +31,7 @@ public class PatientController {
     @Getter
     private final PatientService patientService;
     private final PatientRepository patientRepository;
+    private final DepartmentService departmentService;
 
 
 
@@ -38,11 +42,11 @@ public class PatientController {
             Patient createdPatient = patientService.createPatient(patientDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(new PatientDTO(createdPatient));
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", e.getMessage()));
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error creating patient: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Collections.singletonMap("error", "Error creating patient: " + e.getMessage()));
         }
     }
 
@@ -112,4 +116,22 @@ public class PatientController {
 
         return ResponseEntity.ok(analyses);
     }
+
+    @GetMapping("/flat")
+    public ResponseEntity<List<DepartmentWithDoctorsDTO.DepartmentParentDTO>> getAllDepartmentsFlat() {
+        List<Department> departments = departmentService.getAllDepartmentsFlat();
+        List<DepartmentWithDoctorsDTO.DepartmentParentDTO> dtos = departments.stream()
+                .map(d -> new DepartmentWithDoctorsDTO.DepartmentParentDTO(d.getId(), d.getName()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/for-selection")
+    public ResponseEntity<List<PatientDTO>> getPatientsForSelection() {
+        List<PatientDTO> patients = patientRepository.findAll().stream()
+                .map(p -> new PatientDTO(p))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(patients);
+    }
+
 }

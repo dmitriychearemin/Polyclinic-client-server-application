@@ -95,4 +95,8 @@ public class DepartmentService {
                 "departmentRepository=" + departmentRepository +
                 '}';
     }
+
+    public List<Department> getAllDepartmentsFlat() {
+        return departmentRepository.findAll(); // или реализуйте метод с правильной сортировкой
+    }
 }
