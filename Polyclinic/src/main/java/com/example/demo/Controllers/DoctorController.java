@@ -3,6 +3,8 @@ package com.example.demo.Controllers;
 import com.example.demo.DTO.DoctorDTO;
 import com.example.demo.Entities.Doctor;
 
+import com.example.demo.Interfaces.DepartmentRepository;
+import com.example.demo.Interfaces.DoctorRepository;
 import com.example.demo.Services.DoctorService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,16 +23,6 @@ public class DoctorController {
     private final DoctorRepository doctorRepository;
     private final DepartmentRepository departmentRepository;
     private final DoctorService doctorService;
-
-
-
-    public DoctorController(DoctorRepository doctorRepository,
-                            DepartmentRepository departmentRepository, DoctorService doctorService) {
-        this.doctorRepository = doctorRepository;
-        this.departmentRepository = departmentRepository;
-        this.doctorService = doctorService;
-    }
-
 
 
     @GetMapping("/{id}")
@@ -54,35 +46,7 @@ public class DoctorController {
             return ResponseEntity.internalServerError().body("Error creating doctor: " + e.getMessage());
         }
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateDoctor(
-            @PathVariable Long id,
-            @RequestBody DoctorDTO doctorDTO
-    ) {
-        try {
-            Doctor updatedDoctor = doctorService.updateDoctor(id, doctorDTO);
-            return ResponseEntity.ok(convertToDTO(updatedDoctor));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error updating doctor: " + e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteDoctor(@PathVariable Long id) {
-        try {
-            doctorService.deleteDoctor(id);
-            return ResponseEntity.noContent().build();
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error deleting doctor: " + e.getMessage());
-        }
-    }
-
-
+    
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDoctor(
             @PathVariable Long id,
