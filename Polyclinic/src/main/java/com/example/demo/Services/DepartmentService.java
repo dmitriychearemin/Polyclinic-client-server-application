@@ -4,6 +4,7 @@ import com.example.demo.Entities.Department;
 import com.example.demo.Entities.Doctor;
 import com.example.demo.Interfaces.DepartmentRepository;
 import com.example.demo.Interfaces.DoctorRepository;
+import com.example.demo.Requests.DepartmentRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.Getter;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

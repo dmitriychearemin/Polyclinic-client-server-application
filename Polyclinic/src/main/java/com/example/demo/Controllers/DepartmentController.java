@@ -5,7 +5,7 @@ import com.example.demo.DTO.DoctorDTO;
 import com.example.demo.Entities.Department;
 import com.example.demo.Entities.Doctor;
 import com.example.demo.Interfaces.DoctorRepository;
-import com.example.demo.Services.DepartmentRequest;
+import com.example.demo.Requests.DepartmentRequest;
 import com.example.demo.Services.DepartmentService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;

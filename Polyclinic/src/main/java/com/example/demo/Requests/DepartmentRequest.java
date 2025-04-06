@@ -1,4 +1,4 @@
-package com.example.demo.Services;
+package com.example.demo.Requests;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
