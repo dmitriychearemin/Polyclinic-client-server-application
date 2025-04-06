@@ -10,9 +10,7 @@
       margin: 0 auto;
     }
     .back-button {
-      margin-bottom: 20px;
-      padding: 8px 16px;
-      cursor: pointer;
+        margin-bottom: 20px;
     }
     .form-group {
       margin-bottom: 15px;
@@ -34,7 +32,6 @@
       display: flex;
       gap: 10px;
     }
-    /* Стили для поиска отдела */
     .department-search {
       position: relative;
       margin-top: 5px;
@@ -86,7 +83,7 @@
   </style>
 </head>
 <body>
-<button class="back-button" onclick="window.history.back()">Back</button>
+<button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
 <h1>Edit Patient</h1>
 
 <form id="editPatientForm">
@@ -126,7 +123,6 @@
     </select>
   </div>
 
-  <!-- Поле поиска отдела -->
   <div class="form-group">
     <label for="departmentSearch">Department <span class="required-star">*</span></label>
     <div class="department-search">

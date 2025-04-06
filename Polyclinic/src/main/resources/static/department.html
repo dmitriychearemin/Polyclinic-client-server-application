@@ -79,10 +79,24 @@
     .modal-buttons button:hover {
       opacity: 0.9;
     }
+    .button-edit {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    .button-view {
+      background-color: #008000;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-<button class="back-button" onclick="window.history.back()">Back</button>
+<button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
 <h1 id="departmentName"></h1>
 
 <div class="details-section">
@@ -94,8 +108,8 @@
   <p><strong>Doctors in This Department:</strong></p>
   <ul id="doctorsList"></ul>
 
-  <button onclick="window.location.href = `edit-department.html?id=${currentDepartmentId}`">Edit Department</button>
-  <button onclick="viewPatients()">View Patients in This Department</button>
+  <button class="button-edit" onclick="window.location.href = `edit-department.html?id=${currentDepartmentId}`">Edit Department</button>
+  <button class="button-view" onclick="viewPatients()">View Patients in This Department</button>
 </div>
 
 <div class="edit-section">

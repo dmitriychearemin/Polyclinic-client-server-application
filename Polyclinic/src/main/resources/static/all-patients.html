@@ -10,12 +10,38 @@
     .back-button {
       margin-bottom: 20px;
     }
+    /* Стили для поиска */
+    .search-section {
+      margin: 20px 0;
+    }
+    #searchInput {
+      padding: 8px;
+      width: 300px;
+      margin-right: 10px;
+    }
+    .button-view {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    .patients-list {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
 <button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
 <h1>All Patients</h1>
-<div id="patientsList"></div>
+
+<!-- Добавленная секция поиска -->
+<div class="search-section">
+  <input type="text" id="searchInput" placeholder="Full or part name">
+  <button class="button-view" onclick="searchPatients()">Search</button>
+</div>
+
+<div id="patientsList" class="patients-list"></div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -34,6 +60,12 @@
         `).join('');
       })
       .catch(error => alert(error.message));
+  }
+
+  // Перенесенная функция поиска
+  function searchPatients() {
+    const query = document.getElementById('searchInput').value;
+    window.location.href = `search-results.html?query=${query}`;
   }
 </script>
 </body>

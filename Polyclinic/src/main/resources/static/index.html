@@ -29,6 +29,20 @@
       border-left: 2px solid #ccc; /* Линия для визуального представления дерева */
       padding-left: 10px; /* Отступ от линии */
     }
+    .button-add {
+      background-color: #008000;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    .button-view {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -36,7 +50,7 @@
 
 <div class="department-list">
   <h2>Departments
-    <button onclick="window.location.href='create-department.html'" style="margin-left: 10px; padding: 5px 10px;">+ Add</button>
+    <button class = "button-add" onclick="window.location.href='create-department.html'" style="margin-left: 10px; padding: 5px 10px;">+ Add</button>
   </h2>
   <div id="departments">
 
@@ -44,23 +58,17 @@
 </div>
 
 <div class="view-all-patients">
-  <button onclick="window.location.href='all-patients.html'">View All Patients</button>
-</div>
-
-<div class="search-section">
-  <h2>Search Patients</h2>
-  <input type="text" id="searchInput" placeholder="Full or part name">
-  <button onclick="searchPatients()">Search</button>
+  <button class = "button-view" onclick="window.location.href='all-patients.html'">View All Patients</button>
 </div>
 
 <div class="new-patient-section" style="margin-top: 20px;">
-  <button onclick="window.location.href='create-patient.html'" style="padding: 5px 10px;">New Patient</button>
+  <button class = "button-add" onclick="window.location.href='create-patient.html'" style="padding: 5px 10px;">New Patient</button>
 </div>
 <div class="new-doctor-section" style="margin-top: 20px;">
-  <button onclick="window.location.href='create-doctor.html'" style="padding: 5px 10px;">New Doctor</button>
+  <button class = "button-add" onclick="window.location.href='create-doctor.html'" style="padding: 5px 10px;">New Doctor</button>
 </div>
 <div class="new-analyse-section" style="margin-top: 20px;">
-  <button onclick="window.location.href='create-analyse-result.html'" style="padding: 5px 10px;">New Analyse result</button>
+  <button class = "button-add" onclick="window.location.href='create-analyse-result.html'" style="padding: 5px 10px;">New Analyse result</button>
 </div>
 
 <script>
@@ -92,11 +100,6 @@
         ` : ''}
       </div>
     `).join('');
-  }
-
-  function searchPatients() {
-    const query = document.getElementById('searchInput').value;
-    window.location.href = `search-results.html?query=${query}`;
   }
 
   function showError(message) {
