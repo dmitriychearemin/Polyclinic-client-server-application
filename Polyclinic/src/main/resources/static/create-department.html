@@ -63,19 +63,33 @@
     .department-item:hover {
       background-color: #f8f9fa;
     }
-    .selected-department {
-      margin-top: 5px;
-      padding: 5px;
-      background: #e9ecef;
-      border-radius: 4px;
-      display: inline-block;
-    }
     .required-star {
       color: red;
       margin-left: 3px;
     }
     .back-button {
       margin-bottom: 20px;
+    }
+    .selected-department {
+      margin-top: 5px;
+      padding: 5px 25px 5px 10px;
+      background: #e9ecef;
+      border-radius: 4px;
+      position: relative;
+      display: inline-block;
+    }
+    .clear-selection {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #666;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .clear-selection:hover {
+      color: #ff4444;
     }
   </style>
 </head>
@@ -104,12 +118,14 @@
       <input type="text"
              id="departmentSearch"
              placeholder="Search department..."
-             onclick="toggleDepartmentList()"
              autocomplete="off">
       <div id="departmentResults" class="department-results"></div>
     </div>
     <input type="hidden" id="parentId" name="parentId">
-    <div id="selectedDepartment" class="selected-department"></div>
+    <div id="selectedDepartment" class="selected-department" style="display: none;">
+      <span class="selected-text"></span>
+      <span class="clear-selection" onclick="clearParentSelection()">×</span>
+    </div>
   </div>
 
   <div class="form-buttons">
@@ -118,7 +134,6 @@
 </form>
 
 <script>
-  // Остальной JavaScript код остается без изменений
   window.onload = function() {
     fetch('/api/departments/flat')
       .then(response => response.json())
@@ -126,6 +141,13 @@
         window.allDepartments = departments;
         populateDepartmentList(departments);
       });
+
+    // Добавляем обработчик кликов вне области поиска
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.department-search')) {
+        document.getElementById('departmentResults').style.display = 'none';
+      }
+    });
   };
 
   function populateDepartmentList(departments) {
@@ -141,18 +163,22 @@
     });
   }
 
-  function toggleDepartmentList() {
-    const results = document.getElementById('departmentResults');
-    results.style.display = results.style.display === 'none' ? 'block' : 'block';
-  }
-
   function selectDepartment(dept) {
     document.getElementById('parentId').value = dept.id;
-    document.getElementById('selectedDepartment').textContent =
-      `Selected: ${dept.name} (ID: ${dept.id})`;
+    document.getElementById('selectedDepartment').style.display = 'inline-block';
+    document.querySelector('#selectedDepartment .selected-text').textContent =
+      `${dept.name} (ID: ${dept.id})`;
+    document.getElementById('departmentSearch').value = '';
     document.getElementById('departmentResults').style.display = 'none';
   }
 
+  function clearParentSelection() {
+    document.getElementById('parentId').value = '';
+    document.getElementById('selectedDepartment').style.display = 'none';
+    document.getElementById('departmentSearch').value = '';
+  }
+
+  // Обработчики событий
   document.getElementById('departmentSearch').addEventListener('input', function(e) {
     const searchTerm = e.target.value.toLowerCase();
     const filtered = window.allDepartments.filter(dept =>
@@ -160,6 +186,14 @@
       dept.id.toString().includes(searchTerm)
     );
     populateDepartmentList(filtered);
+    document.getElementById('departmentResults').style.display = 'block';
+  });
+
+  document.getElementById('departmentSearch').addEventListener('focus', function() {
+    if(window.allDepartments && window.allDepartments.length > 0) {
+      populateDepartmentList(window.allDepartments);
+      document.getElementById('departmentResults').style.display = 'block';
+    }
   });
 
   async function createDepartment() {
@@ -168,7 +202,6 @@
     const capacity = document.getElementById('capacity').value;
     const parentId = document.getElementById('parentId').value;
 
-    // Валидация
     if (!name || !description || !capacity) {
       alert('Please fill all required fields (marked with *)');
       return;
