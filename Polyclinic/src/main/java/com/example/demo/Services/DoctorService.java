@@ -25,6 +25,16 @@ public class DoctorService {
         Department department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new EntityNotFoundException("Department not found"));
 
+        if (doctorRepository.existsByUniqueFields(
+                request.getFirstName(),
+                request.getLastName(),
+                request.getSpecialization(),
+                request.getHireDate(),
+                request.getPhone(),
+                request.getEmail())) {
+            throw new IllegalStateException("Доктор с такими данными уже существует");
+        }
+
         Doctor doctor = new Doctor();
         doctor.setFirstName(request.getFirstName());
         doctor.setLastName(request.getLastName());
@@ -38,6 +48,18 @@ public class DoctorService {
     }
 
     public Doctor updateDoctor(Long id, DoctorDTO request) {
+
+        if (doctorRepository.existsByUniqueFieldsExcludingId(
+                id,
+                request.getFirstName(),
+                request.getLastName(),
+                request.getSpecialization(),
+                request.getHireDate(),
+                request.getPhone(),
+                request.getEmail())) {
+            throw new IllegalStateException("Другой доктор с такими данными уже существует");
+        }
+
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
 

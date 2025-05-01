@@ -84,11 +84,12 @@ public class PatientController {
             return ResponseEntity.ok(new PatientDTO(updatedPatient));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Collections.singletonMap("error", e.getMessage())); // Возвращаем JSON
+                    .body(Collections.singletonMap("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(Collections.singletonMap("error", "Error updating patient: " + e.getMessage()));
         }
+
     }
 
     @GetMapping
