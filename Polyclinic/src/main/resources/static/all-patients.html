@@ -29,13 +29,17 @@
     .patients-list {
       margin-top: 20px;
     }
+    .department {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
   </style>
 </head>
 <body>
 <button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
 <h1>All Patients</h1>
 
-<!-- Добавленная секция поиска -->
 <div class="search-section">
   <input type="text" id="searchInput" placeholder="Full or part name">
   <button class="button-view" onclick="searchPatients()">Search</button>
@@ -50,23 +54,35 @@
 
   function loadAllPatients() {
     fetch('/api/patients')
-      .then(response => response.json())
-      .then(patients => {
-        const patientsList = document.getElementById('patientsList');
-        patientsList.innerHTML = patients.map(patient => `
-          <div>
-            <a href="patients.html?id=${patient.id}">${patient.firstName} ${patient.lastName}</a>
-          </div>
-        `).join('');
-      })
-      .catch(error => alert(error.message));
-  }
+        .then(response => response.json())
+        .then(patients => {
+            const patientsByDepartment = {};
 
-  // Перенесенная функция поиска
-  function searchPatients() {
+            patients.forEach(patient => {
+                const department = patient.departmentName || 'Unknown'; // Если департамент не указан
+                if (!patientsByDepartment[department]) {
+                    patientsByDepartment[department] = [];
+                }
+                patientsByDepartment[department].push(patient);
+            });
+
+            const patientsList = document.getElementById('patientsList');
+            patientsList.innerHTML = Object.keys(patientsByDepartment).map(department =>
+                `<div class="department">${department}</div>` +
+                `${patientsByDepartment[department].map(patient =>
+                    `<div>
+                        <a href="patients.html?id=${patient.id}">${patient.firstName} ${patient.lastName}</a>
+                    </div>`
+                ).join('')}`
+            ).join('');
+        })
+        .catch(error => alert(error.message));
+}
+
+function searchPatients() {
     const query = document.getElementById('searchInput').value;
-    window.location.href = `search-results.html?query=${query}`;
-  }
+    window.location.href = `search-results.html?query=${encodeURIComponent(query)}`;
+}
 </script>
 </body>
 </html>
