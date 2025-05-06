@@ -29,6 +29,15 @@ public class PatientService {
             throw new IllegalStateException("Department is full");
         }
 
+        if (patientRepository.existsByUniqueFields(
+                patientDTO.getFirstName(),
+                patientDTO.getLastName(),
+                patientDTO.getBirthDate(),
+                patientDTO.getPhone(),
+                patientDTO.getEmail())) {
+            throw new IllegalStateException("Пациент с такими данными уже существует");
+        }
+
         Patient patient = new Patient();
         patient.setFirstName(patientDTO.getFirstName());
         patient.setLastName(patientDTO.getLastName());
@@ -45,11 +54,24 @@ public class PatientService {
     }
 
     public Patient updatePatient(Long id, PatientDTO patientDTO) {
+
+        if (patientRepository.existsByUniqueFieldsExcludingId(
+                id,
+                patientDTO.getFirstName(),
+                patientDTO.getLastName(),
+                patientDTO.getBirthDate(),
+                patientDTO.getPhone(),
+                patientDTO.getEmail())) {
+            throw new IllegalStateException("Другой пациент с такими данными уже существует");
+        }
+
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
 
         Department department = departmentRepository.findById(patientDTO.getDepartmentId())
                 .orElseThrow(() -> new EntityNotFoundException("Department not found"));
+
+
 
         if (!patient.getDepartment().getId().equals(patientDTO.getDepartmentId())) {
             Department oldDepartment = patient.getDepartment();
