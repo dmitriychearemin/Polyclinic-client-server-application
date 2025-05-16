@@ -32,7 +32,7 @@ public class DoctorService {
                 request.getHireDate(),
                 request.getPhone(),
                 request.getEmail())) {
-            throw new IllegalStateException("Доктор с такими данными уже существует");
+            throw new IllegalStateException("Doctor with these data already exist");
         }
 
         Doctor doctor = new Doctor();
@@ -57,7 +57,7 @@ public class DoctorService {
                 request.getHireDate(),
                 request.getPhone(),
                 request.getEmail())) {
-            throw new IllegalStateException("Другой доктор с такими данными уже существует");
+            throw new IllegalStateException("Another doctor with these data already exist");
         }
 
         Doctor doctor = doctorRepository.findById(id)

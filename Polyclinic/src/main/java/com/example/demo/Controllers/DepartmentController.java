@@ -52,7 +52,6 @@ public class DepartmentController {
             dto.setParent(parentDTO);
         }
 
-        // Обработка children
         if (department.getChildren() != null) {
             Set<DepartmentWithDoctorsDTO> childrenDTOs = department.getChildren()
                     .stream()
@@ -107,7 +106,6 @@ public class DepartmentController {
         List<Doctor> doctors = doctorRepository.findByDepartmentId(id);
         DepartmentWithDoctorsDTO dto = new DepartmentWithDoctorsDTO(department, doctors);
 
-        // Добавляем children, если нужно
         if (department.getChildren() != null) {
             Set<DepartmentWithDoctorsDTO> childrenDTOs = department.getChildren()
                     .stream()

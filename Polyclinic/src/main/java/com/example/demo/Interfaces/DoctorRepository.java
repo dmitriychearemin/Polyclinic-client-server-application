@@ -10,7 +10,6 @@ import java.util.List;
 
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
-    //@Query("SELECT d FROM Doctor d WHERE d.department = :departmentId") @Param("departmentId")
     List<Doctor> findByDepartmentId(Long departmentId);
 
     @Query("SELECT COUNT(d) > 0 FROM Doctor d WHERE " +

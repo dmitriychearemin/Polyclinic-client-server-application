@@ -178,7 +178,6 @@
     document.getElementById('departmentSearch').value = '';
   }
 
-  // Обработчики событий
   document.getElementById('departmentSearch').addEventListener('input', function(e) {
     const searchTerm = e.target.value.toLowerCase();
     const filtered = window.allDepartments.filter(dept =>

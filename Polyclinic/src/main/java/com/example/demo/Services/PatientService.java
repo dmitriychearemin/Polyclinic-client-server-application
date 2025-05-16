@@ -35,7 +35,7 @@ public class PatientService {
                 patientDTO.getBirthDate(),
                 patientDTO.getPhone(),
                 patientDTO.getEmail())) {
-            throw new IllegalStateException("Пациент с такими данными уже существует");
+            throw new IllegalStateException("Patient with these data already exist");
         }
 
         Patient patient = new Patient();
@@ -62,7 +62,7 @@ public class PatientService {
                 patientDTO.getBirthDate(),
                 patientDTO.getPhone(),
                 patientDTO.getEmail())) {
-            throw new IllegalStateException("Другой пациент с такими данными уже существует");
+            throw new IllegalStateException("Another patient with these data already exist");
         }
 
         Patient patient = patientRepository.findById(id)

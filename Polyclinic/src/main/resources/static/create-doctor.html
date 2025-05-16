@@ -99,7 +99,6 @@
     <input type="text" id="specialization" required placeholder="Cardiology">
   </div>
 
-  <!-- Поле поиска департамента -->
   <div class="form-group">
     <label for="departmentSearch">Department <span class="required-star">*</span></label>
     <div class="department-search">
@@ -136,7 +135,6 @@
 </form>
 
 <script>
-  // Загрузка департаментов при загрузке страницы
   window.onload = function() {
     fetch('/api/departments/flat')
       .then(response => response.json())
@@ -171,7 +169,6 @@
     document.getElementById('departmentResults').style.display = 'none';
   }
 
-  // Обработчик поиска
   document.getElementById('departmentSearch').addEventListener('input', function(e) {
     const searchTerm = e.target.value.toLowerCase();
     const filtered = window.allDepartments.filter(dept =>
@@ -192,7 +189,6 @@
       email: document.getElementById('email').value.trim()
     };
 
-    // Валидация
     const errors = [];
     if (!doctorDTO.firstName) errors.push("First name is required");
     if (!doctorDTO.lastName) errors.push("Last name is required");
